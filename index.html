@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electrolysis Virtual Lab — CAPE Chemistry</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#03080e;--surface:#080f1a;--surface2:#0d1828;--surface3:#121f30;
+  --border:rgba(60,140,255,0.14);--text:#bfd4f0;--text-dim:#4a7090;
+  --accent:#00c8ff;--accent2:#ff9500;--cathode:#3399ff;--anode:#ff4444;
+  --green:#00e88a;--warn:#ff9500;--base-font:15px;
+}
+body.light{
+  --bg:#edf2f8;--surface:#ffffff;--surface2:#f0f5fc;--surface3:#e4ecf6;
+  --border:rgba(0,80,200,0.16);--text:#142030;--text-dim:#3a6080;
+  --accent:#0066bb;--accent2:#cc7000;--cathode:#1166cc;--anode:#cc2222;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;font-size:var(--base-font);line-height:1.55;overflow-x:hidden;transition:background .3s,color .3s;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--surface);}
+::-webkit-scrollbar-thumb{background:rgba(0,200,255,.25);border-radius:3px;}
+header{background:linear-gradient(180deg,rgba(0,200,255,.08) 0%,transparent 100%);border-bottom:1px solid var(--border);padding:14px 24px 10px;text-align:center;position:relative;z-index:20;}
+.header-pill{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--accent);border:1px solid rgba(0,200,255,.35);padding:3px 12px;border-radius:2px;text-transform:uppercase;margin-bottom:6px;}
+header h1{font-family:'Rajdhani',sans-serif;font-size:clamp(1.4rem,3vw,2.2rem);font-weight:700;letter-spacing:1.5px;background:linear-gradient(135deg,#00c8ff 0%,#ff9500 60%,#ff4488 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+header p{font-size:11.5px;color:var(--text-dim);letter-spacing:.8px;font-weight:300;}
+.cbar{display:flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(0,0,0,.3);border-bottom:1px solid var(--border);flex-wrap:wrap;z-index:15;position:relative;}
+body.light .cbar{background:rgba(0,0,0,.04);}
+.cbar-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+.cbtn{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:12px;font-weight:600;padding:4px 11px;cursor:pointer;transition:all .18s;white-space:nowrap;}
+.cbtn:hover{border-color:var(--accent);color:var(--accent);}
+.cbtn.wide{min-width:105px;justify-content:center;}
+.fsdisp{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent);background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 9px;min-width:42px;text-align:center;}
+.cbar-sep{width:1px;height:22px;background:var(--border);margin:0 4px;}
+nav{display:flex;justify-content:center;flex-wrap:wrap;gap:0;border-bottom:1px solid var(--border);background:rgba(0,0,0,.2);position:sticky;top:0;z-index:14;}
+body.light nav{background:rgba(255,255,255,.9);}
+.tnav{background:none;border:none;border-bottom:3px solid transparent;color:var(--text-dim);font-family:'Exo 2',sans-serif;font-size:11.5px;font-weight:600;letter-spacing:.6px;padding:10px 15px;cursor:pointer;transition:all .25s;text-transform:uppercase;white-space:nowrap;}
+.tnav:hover{color:var(--text);}
+.tnav.active{color:var(--accent);border-bottom-color:var(--accent);}
+main{max-width:1400px;margin:0 auto;padding:18px 14px;}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;animation:fadeSlide .3s ease;}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.glass{background:rgba(8,15,26,.8);border:1px solid var(--border);border-radius:10px;backdrop-filter:blur(8px);padding:16px;}
+body.light .glass{background:rgba(255,255,255,.9);}
+.card-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--accent);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--accent),transparent);opacity:.25;}
+/* ---- PSU ---- */
+.psu-wrap{background:#111;border:2px solid #2a2a2a;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
+.psu-display{background:#0a0a0a;border:2px solid #222;border-radius:6px;padding:8px 14px;font-family:'Share Tech Mono',monospace;text-align:center;min-width:120px;}
+.psu-val{font-size:26px;font-weight:700;line-height:1;letter-spacing:2px;color:#ff9500;}
+.psu-unit{font-size:9px;letter-spacing:2px;color:#664400;margin-top:2px;}
+.psu-label{font-size:8px;color:#554400;letter-spacing:1px;}
+.psu-led{width:14px;height:14px;border-radius:50%;background:#330000;border:2px solid #220000;transition:all .3s;flex-shrink:0;}
+.psu-led.on{background:#ff2200;box-shadow:0 0 12px #ff4400,0 0 24px #ff220066;}
+.psu-btn{padding:8px 18px;border-radius:6px;border:2px solid #333;background:#1a1a1a;color:#888;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.psu-btn:hover{border-color:#555;color:#ccc;}
+.psu-btn.on{background:#1a0000;border-color:#ff4400;color:#ff6600;box-shadow:0 0 10px #ff440033;}
+.psu-adj{background:#222;border:1px solid #444;border-radius:4px;color:#ffaa44;font-family:'Share Tech Mono',monospace;font-size:12px;padding:4px 8px;cursor:pointer;transition:all .15s;}
+.psu-adj:hover{background:#333;border-color:#666;}
+.psu-adj-val{font-family:'Share Tech Mono',monospace;font-size:15px;color:#ff9500;min-width:44px;text-align:center;}
+.psu-label-sm{font-size:9px;color:#554422;font-family:'Share Tech Mono';letter-spacing:1px;text-transform:uppercase;}
+.terminal-row{display:flex;gap:14px;margin-left:auto;}
+.terminal{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.terminal-post{width:18px;height:18px;border-radius:50%;border:3px solid #555;}
+.terminal-post.pos{background:#cc2200;border-color:#ff4400;}
+.terminal-post.neg{background:#111;border-color:#666;}
+.terminal-lbl{font-size:10px;font-family:'Share Tech Mono';color:#888;}
+/* ---- SIM LAYOUT ---- */
+.sim-layout{display:grid;grid-template-columns:1fr 285px;gap:14px;align-items:start;}
+@media(max-width:900px){.sim-layout{grid-template-columns:1fr;}}
+.sim-left{display:flex;flex-direction:column;gap:14px;}
+.sim-right{display:flex;flex-direction:column;gap:12px;}
+#cellCanvas{width:100%;display:block;border-radius:8px;cursor:default;}
+.zoom-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.zoom-card{background:rgba(0,0,0,.45);border:1px solid var(--border);border-radius:8px;padding:10px;}
+body.light .zoom-card{background:rgba(0,0,40,.04);}
+.zoom-title{font-size:10px;font-family:'Share Tech Mono';letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.zoom-title.anode{color:var(--anode);}
+.zoom-title.cathode{color:var(--cathode);}
+.ctrl-group{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;}
+.ctrl-group label{display:block;font-size:10px;font-weight:600;color:var(--text-dim);letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px;}
+.ctrl-select{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:13px;padding:7px 9px;outline:none;cursor:pointer;}
+.elec-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.insert-btn{width:100%;margin-top:6px;padding:7px;border-radius:5px;border:1px solid;font-family:'Exo 2',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;transition:all .2s;}
+.insert-btn.anode-btn{border-color:var(--anode);color:var(--anode);background:rgba(255,68,68,.07);}
+.insert-btn.anode-btn:hover{background:rgba(255,68,68,.16);}
+.insert-btn.cathode-btn{border-color:var(--cathode);color:var(--cathode);background:rgba(51,153,255,.07);}
+.insert-btn.cathode-btn:hover{background:rgba(51,153,255,.16);}
+.obs-box{background:rgba(0,0,0,.28);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:12px;line-height:1.7;min-height:60px;}
+body.light .obs-box{background:rgba(0,0,0,.03);}
+.obs-item{display:flex;align-items:flex-start;gap:6px;padding:2px 0;}
+.obs-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.stat-box{background:rgba(0,0,0,.28);border:1px solid var(--border);border-radius:6px;padding:8px;text-align:center;}
+body.light .stat-box{background:rgba(0,0,0,.04);}
+.stat-val{font-family:'Share Tech Mono',monospace;font-size:15px;color:var(--accent);}
+.stat-lbl{font-size:9.5px;color:var(--text-dim);letter-spacing:.5px;text-transform:uppercase;margin-top:2px;}
+.reset-btn{width:100%;padding:8px;background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.3);border-radius:6px;color:#ff8888;font-family:'Exo 2',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.reset-btn:hover{background:rgba(255,80,80,.16);}
+/* ---- EQUATIONS ---- */
+.eq-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.eq-layout{grid-template-columns:1fr;}}
+.eq-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.eq-tag{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:3px 10px;border-radius:20px;text-transform:uppercase;margin-bottom:10px;}
+.eq-tag.anode{background:rgba(255,68,68,.13);color:var(--anode);border:1px solid rgba(255,68,68,.3);}
+.eq-tag.cathode{background:rgba(51,153,255,.13);color:var(--cathode);border:1px solid rgba(51,153,255,.3);}
+.eq-tag.overall{background:rgba(0,200,255,.1);color:var(--accent);border:1px solid rgba(0,200,255,.28);}
+.eq-formula{font-family:'Share Tech Mono',monospace;font-size:15.5px;padding:12px 14px;background:rgba(0,0,0,.3);border-radius:7px;color:#ddf0ff;margin:8px 0;line-height:1.5;border-left:3px solid;}
+body.light .eq-formula{background:rgba(0,0,80,.05);color:#1a2040;}
+.eq-formula.anode-eq{border-left-color:var(--anode);}
+.eq-formula.cathode-eq{border-left-color:var(--cathode);}
+.eq-formula.overall-eq{border-left-color:var(--accent);}
+.eq-expl{font-size:12.5px;color:var(--text-dim);line-height:1.75;margin-top:8px;}
+.why-box{background:rgba(0,200,255,.04);border:1px solid rgba(0,200,255,.14);border-radius:7px;padding:12px;font-size:12px;line-height:1.75;margin-top:12px;}
+.why-box h4{font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:1px;color:var(--accent);margin-bottom:6px;text-transform:uppercase;}
+/* ---- FARADAY ---- */
+.far-law{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;}
+.far-formula{font-family:'Share Tech Mono',monospace;font-size:20px;text-align:center;padding:14px;background:rgba(0,0,0,.28);border-radius:8px;color:var(--accent);letter-spacing:2px;margin:10px 0;}
+body.light .far-formula{background:rgba(0,0,200,.05);}
+.far-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+@media(max-width:700px){.far-grid{grid-template-columns:1fr;}}
+.far-calc{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.inp-group{margin-bottom:10px;}
+.inp-group label{display:block;font-size:10.5px;font-weight:600;color:var(--text-dim);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px;}
+.inp-row{display:flex;gap:6px;}
+.inp-num{flex:1;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:14px;padding:7px 10px;outline:none;transition:border-color .2s;}
+body.light .inp-num{background:#f8faff;}
+.inp-num:focus{border-color:var(--accent);}
+.inp-sel{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:12px;padding:7px 7px;outline:none;cursor:pointer;font-family:'Exo 2',sans-serif;}
+body.light .inp-sel{background:#f8faff;}
+.inp-sel-wide{width:100%;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:5px;color:var(--text);font-size:13px;padding:7px 9px;outline:none;cursor:pointer;font-family:'Exo 2',sans-serif;}
+body.light .inp-sel-wide{background:#f8faff;}
+.calc-go{width:100%;padding:9px;background:linear-gradient(135deg,#0044aa,var(--accent));border:none;border-radius:6px;color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;margin-top:6px;}
+.calc-go:hover{box-shadow:0 0 16px rgba(0,200,255,.4);transform:translateY(-1px);}
+.result-steps{background:rgba(0,0,0,.28);border:1px solid var(--border);border-radius:7px;padding:12px;margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text);line-height:1.9;display:none;}
+body.light .result-steps{background:rgba(0,0,80,.04);}
+.step-line{display:flex;gap:8px;flex-wrap:wrap;}
+.step-label{color:var(--text-dim);min-width:180px;flex-shrink:0;}
+.step-val{color:var(--accent);}
+.step-hl{color:#00e88a;font-size:14px;}
+/* ---- PD ---- */
+.pd-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:800px){.pd-layout{grid-template-columns:1fr;}}
+.pd-table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{background:var(--surface3);color:var(--accent);font-family:'Rajdhani',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;padding:9px 10px;text-align:left;border-bottom:2px solid var(--border);}
+td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:hover td{background:rgba(0,200,255,.04);}
+.td-mono{font-family:'Share Tech Mono',monospace;font-size:12px;}
+.badge-e{display:inline-block;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;letter-spacing:.5px;}
+.easy{background:rgba(0,232,138,.18);color:#00e88a;}
+.med{background:rgba(255,149,0,.15);color:#ff9500;}
+.hard{background:rgba(255,68,68,.13);color:#ff7777;}
+.ion-chip{padding:5px 12px;border-radius:20px;border:1px solid;font-family:'Share Tech Mono',monospace;font-size:11.5px;cursor:pointer;transition:all .2s;user-select:none;display:inline-block;margin:3px;}
+.ion-chip.selected{box-shadow:0 0 10px currentColor;}
+.discharge-result{background:rgba(0,0,0,.28);border:1px solid var(--border);border-radius:7px;padding:12px;margin-top:10px;min-height:80px;font-size:12.5px;line-height:1.8;}
+body.light .discharge-result{background:rgba(0,0,0,.04);}
+.conc-note{background:rgba(255,149,0,.07);border:1px solid rgba(255,149,0,.22);border-radius:7px;padding:10px;margin-top:10px;font-size:12px;line-height:1.7;}
+.conc-note h4{color:var(--accent2);font-family:'Rajdhani',sans-serif;font-size:13px;margin-bottom:4px;}
+/* ---- APPS ---- */
+.app-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.app-tab{padding:8px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-family:'Exo 2',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.app-tab:hover{border-color:var(--accent);color:var(--accent);}
+.app-tab.active{background:rgba(0,200,255,.12);border-color:var(--accent);color:var(--accent);}
+.app-pane{display:none;}
+.app-pane.active{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:700px){.app-pane.active{grid-template-columns:1fr;}}
+.app-info h3{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;margin-bottom:8px;}
+.app-info p{font-size:13px;line-height:1.8;color:var(--text-dim);margin-bottom:8px;}
+.app-detail{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:12px;margin-bottom:8px;}
+.app-detail h4{font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:1px;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
+.app-detail p,.app-detail li{font-size:12.5px;line-height:1.75;color:var(--text-dim);}
+.app-detail ul{list-style:none;padding:0;}
+.app-detail li::before{content:'▶ ';color:var(--accent);font-size:9px;}
+.eq-line{font-family:'Share Tech Mono',monospace;font-size:12px;background:rgba(0,0,0,.22);border-radius:5px;padding:7px 10px;margin:4px 0;border-left:3px solid var(--accent2);}
+body.light .eq-line{background:rgba(0,0,80,.05);}
+.purif-note{background:rgba(0,232,138,.06);border:1px solid rgba(0,232,138,.22);border-radius:6px;padding:10px;font-size:12px;line-height:1.75;margin-top:8px;}
+.app-ctrl-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;}
+.app-select{background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:12px;padding:6px 8px;outline:none;cursor:pointer;}
+.app-btn{padding:7px 14px;background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.3);border-radius:5px;color:var(--accent);font-family:'Exo 2',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;}
+.app-btn:hover{background:rgba(0,200,255,.2);}
+/* ---- CONCEPTS ---- */
+.concept-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;}
+.concept-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.concept-icon{font-size:28px;margin-bottom:8px;}
+.concept-card h3{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px;}
+.concept-card p{font-size:12.5px;color:var(--text-dim);line-height:1.75;}
+.hl{color:var(--accent);}.hl2{color:var(--accent2);}
+/* ---- REF ---- */
+.ref-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:750px){.ref-layout{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-pill">CAPE Chemistry · Unit 2 · Module 2 · Electrolysis</div>
+  <h1>⚡ Electrolysis Virtual Laboratory</h1>
+  <p>Interactive Simulation · Faraday's Laws · Applications · Reference Data</p>
+</header>
+<div class="cbar">
+  <span class="cbar-label">Theme</span>
+  <button class="cbtn wide" id="themeBtn" onclick="toggleTheme()"><span id="themeIcon">☀️</span><span id="themeLabel">Light</span></button>
+  <div class="cbar-sep"></div>
+  <span class="cbar-label">Font</span>
+  <button class="cbtn" onclick="adjFont(-1)">A−</button>
+  <div class="fsdisp" id="fsDisp">15px</div>
+  <button class="cbtn" onclick="adjFont(1)">A+</button>
+  <div class="cbar-sep"></div>
+  <button class="cbtn" onclick="exportState()">⬇ Export</button>
+  <label class="cbtn" style="cursor:pointer;">⬆ Import<input type="file" accept=".json" style="display:none" onchange="importState(this)"></label>
+</div>
+<nav>
+  <button class="tnav active" data-tab="sim">⚡ Simulator</button>
+  <button class="tnav" data-tab="eq">⚗️ Equations</button>
+  <button class="tnav" data-tab="far">📐 Faraday's Laws</button>
+  <button class="tnav" data-tab="pd">🔄 Preferential Discharge</button>
+  <button class="tnav" data-tab="apps">🏭 Applications</button>
+  <button class="tnav" data-tab="ref">📋 Reference</button>
+  <button class="tnav" data-tab="concepts">💡 Concepts</button>
+</nav>
+<main>
+<!-- TAB 1: SIMULATOR -->
+<div class="tab-pane active" id="tab-sim">
+  <div class="psu-wrap">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div class="psu-led" id="psuLed"></div>
+      <button class="psu-btn" id="psuBtn" onclick="togglePower()">POWER</button>
+    </div>
+    <div>
+      <div class="psu-display">
+        <div class="psu-label">CURRENT (A)</div>
+        <div class="psu-val" id="psuCurrentDisp">0.00</div>
+        <div class="psu-unit">AMPERES</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;">
+      <div class="psu-label-sm">Set Current</div>
+      <div style="display:flex;align-items:center;gap:5px;">
+        <button class="psu-adj" onclick="adjCurrent(-1)">−1</button>
+        <button class="psu-adj" onclick="adjCurrent(-.1)">−0.1</button>
+        <div class="psu-adj-val" id="psuSetDisp">2.0</div>
+        <button class="psu-adj" onclick="adjCurrent(.1)">+0.1</button>
+        <button class="psu-adj" onclick="adjCurrent(1)">+1</button>
+      </div>
+      <div class="psu-label-sm">Range 0.1–10.0 A</div>
+    </div>
+    <div>
+      <div class="psu-display">
+        <div class="psu-label">TIME ELAPSED</div>
+        <div class="psu-val" id="psuTimeDisp" style="font-size:20px;color:#44cc88;">00:00</div>
+        <div class="psu-unit">MM:SS</div>
+      </div>
+    </div>
+    <div>
+      <div class="psu-display">
+        <div class="psu-label">CHARGE (C)</div>
+        <div class="psu-val" id="psuChargeDisp" style="font-size:18px;color:#88aaff;">0.0</div>
+        <div class="psu-unit">COULOMBS</div>
+      </div>
+    </div>
+    <div class="terminal-row">
+      <div class="terminal"><div class="terminal-post pos"></div><div class="terminal-lbl">+</div></div>
+      <div class="terminal"><div class="terminal-post neg"></div><div class="terminal-lbl">−</div></div>
+    </div>
+  </div>
+  <div class="sim-layout">
+    <div class="sim-left">
+      <div class="glass">
+        <div class="card-title">Electrolytic Cell</div>
+        <canvas id="cellCanvas" height="380"></canvas>
+      </div>
+      <div class="zoom-row">
+        <div class="zoom-card">
+          <div class="zoom-title anode">⊕ Anode — Close-up</div>
+          <canvas id="anodeZoom" height="130" style="width:100%;display:block;border-radius:5px;"></canvas>
+          <div id="anodeZoomLbl" style="font-size:10px;color:var(--text-dim);margin-top:4px;text-align:center;font-family:'Share Tech Mono';">—</div>
+        </div>
+        <div class="zoom-card">
+          <div class="zoom-title cathode">⊖ Cathode — Close-up</div>
+          <canvas id="cathodeZoom" height="130" style="width:100%;display:block;border-radius:5px;"></canvas>
+          <div id="cathodeZoomLbl" style="font-size:10px;color:var(--text-dim);margin-top:4px;text-align:center;font-family:'Share Tech Mono';">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="sim-right">
+      <div class="ctrl-group">
+        <label>Electrolyte</label>
+        <select class="ctrl-select" id="elecSelect" onchange="updateAll()"></select>
+      </div>
+      <div class="ctrl-group">
+        <label>Electrode Materials</label>
+        <div class="elec-row">
+          <div><label style="font-size:9.5px;">Anode (+)</label><select class="ctrl-select" id="anodeMat" onchange="updateAll()"></select></div>
+          <div><label style="font-size:9.5px;">Cathode (−)</label><select class="ctrl-select" id="cathodeMat" onchange="updateAll()"></select></div>
+        </div>
+        <div class="elec-row" style="margin-top:6px;">
+          <button class="insert-btn anode-btn" id="anodeInsertBtn" onclick="toggleElectrode('anode')">Remove Anode</button>
+          <button class="insert-btn cathode-btn" id="cathodeInsertBtn" onclick="toggleElectrode('cathode')">Remove Cathode</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="card-title" style="margin-bottom:8px;">Live Measurements</div>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-val" id="statMass">—</div><div class="stat-lbl">Cathode deposit (g)</div></div>
+          <div class="stat-box"><div class="stat-val" id="statVol">—</div><div class="stat-lbl">Cathode gas (dm³)</div></div>
+          <div class="stat-box"><div class="stat-val" id="statAnodeLoss">—</div><div class="stat-lbl">Anode mass lost (g)</div></div>
+          <div class="stat-box"><div class="stat-val" id="statAnodeVol">—</div><div class="stat-lbl">Anode gas (dm³)</div></div>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <div class="card-title" style="margin-bottom:8px;">Observations</div>
+        <div class="obs-box" id="obsBox"><span style="color:var(--text-dim);font-style:italic;font-size:12px;">Select an electrolyte and start the power supply.</span></div>
+      </div>
+      <button class="reset-btn" onclick="resetSim()">↺ Reset Simulation</button>
+    </div>
+  </div>
+</div>
+<!-- TAB 2: EQUATIONS -->
+<div class="tab-pane" id="tab-eq">
+  <div class="glass" style="margin-bottom:14px;">
+    <div class="card-title">Current Setup</div>
+    <div id="eq-system-desc" style="font-size:13.5px;color:var(--text-dim);">Configure the simulator first to see relevant equations here.</div>
+  </div>
+  <div class="eq-layout">
+    <div class="eq-card">
+      <span class="eq-tag cathode">Cathode (−) Reduction</span>
+      <div class="eq-formula cathode-eq" id="eq-cathode">—</div>
+      <div class="eq-expl" id="eq-cathode-expl"></div>
+      <div class="why-box" id="eq-cathode-why"></div>
+    </div>
+    <div class="eq-card">
+      <span class="eq-tag anode">Anode (+) Oxidation</span>
+      <div class="eq-formula anode-eq" id="eq-anode">—</div>
+      <div class="eq-expl" id="eq-anode-expl"></div>
+      <div class="why-box" id="eq-anode-why"></div>
+    </div>
+    <div class="eq-card" style="grid-column:1/-1;">
+      <span class="eq-tag overall">Overall Cell Equation</span>
+      <div class="eq-formula overall-eq" id="eq-overall">—</div>
+      <div class="eq-expl" id="eq-overall-expl"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 3: FARADAY'S LAWS -->
+<div class="tab-pane" id="tab-far">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+    <div class="far-law">
+      <h3 style="color:#00e88a;font-family:'Rajdhani',sans-serif;font-size:19px;margin-bottom:6px;">First Law of Electrolysis</h3>
+      <p style="font-size:12.5px;color:var(--text-dim);line-height:1.75;">The mass of substance deposited at an electrode is directly proportional to the quantity of electricity (charge) passed.</p>
+      <div class="far-formula">m ∝ Q = I × t</div>
+      <p style="font-size:12px;color:var(--text-dim);">Q = charge (C), I = current (A), t = time (s)</p>
+    </div>
+    <div class="far-law">
+      <h3 style="color:#ff9500;font-family:'Rajdhani',sans-serif;font-size:19px;margin-bottom:6px;">Second Law of Electrolysis</h3>
+      <p style="font-size:12.5px;color:var(--text-dim);line-height:1.75;">The masses of different substances deposited by the same charge are proportional to their chemical equivalent masses (M/z).</p>
+      <div class="far-formula">m = M·I·t / (z·F)</div>
+      <p style="font-size:12px;color:var(--text-dim);">F = 96485 C mol⁻¹, M = molar mass (g/mol), z = ion charge</p>
+    </div>
+  </div>
+  <div class="far-grid">
+    <div class="far-calc">
+      <div class="card-title">Mass Deposited at Cathode</div>
+      <div class="inp-group"><label>Current I (A)</label><div class="inp-row"><input type="number" class="inp-num" id="fc-I" value="2.0" step="0.1" min="0.1" max="20"></div></div>
+      <div class="inp-group"><label>Time t</label><div class="inp-row"><input type="number" class="inp-num" id="fc-t" value="30" step="1" min="1"><select class="inp-sel" id="fc-tunit"><option value="60">min</option><option value="1">sec</option><option value="3600">hr</option></select></div></div>
+      <div class="inp-group"><label>Ion / Metal deposited</label><select class="inp-sel-wide" id="fc-ion"></select></div>
+      <button class="calc-go" onclick="calcFaraday('deposit')">Calculate →</button>
+      <div class="result-steps" id="fc-result"></div>
+    </div>
+    <div class="far-calc">
+      <div class="card-title">Gas Volume at Electrode</div>
+      <div class="inp-group"><label>Current I (A)</label><div class="inp-row"><input type="number" class="inp-num" id="fg-I" value="3.0" step="0.1" min="0.1" max="20"></div></div>
+      <div class="inp-group"><label>Time t</label><div class="inp-row"><input type="number" class="inp-num" id="fg-t" value="45" step="1" min="1"><select class="inp-sel" id="fg-tunit"><option value="60">min</option><option value="1">sec</option><option value="3600">hr</option></select></div></div>
+      <div class="inp-group"><label>Gas</label>
+        <select class="inp-sel-wide" id="fg-gas">
+          <option value="H2">H₂ — hydrogen (z=2, M=2.016)</option>
+          <option value="O2">O₂ — oxygen (z=4, M=32)</option>
+          <option value="Cl2">Cl₂ — chlorine (z=2, M=71)</option>
+        </select>
+      </div>
+      <div class="inp-group"><label>Conditions</label>
+        <select class="inp-sel-wide" id="fg-cond">
+          <option value="24">RTP (25°C, 1 atm) — 24 dm³/mol</option>
+          <option value="22.4">STP (0°C, 1 atm) — 22.4 dm³/mol</option>
+        </select>
+      </div>
+      <button class="calc-go" onclick="calcFaraday('gas')">Calculate →</button>
+      <div class="result-steps" id="fg-result"></div>
+    </div>
+    <div class="far-calc">
+      <div class="card-title">Active Anode Mass Change</div>
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">For active anodes (Cu, Ag, Ni etc.) — the anode dissolves as electrolysis proceeds.</p>
+      <div class="inp-group"><label>Anode Metal</label><select class="inp-sel-wide" id="fa-metal"></select></div>
+      <div class="inp-group"><label>Initial Anode Mass (g)</label><div class="inp-row"><input type="number" class="inp-num" id="fa-mass" value="50.0" step="0.1" min="0"></div></div>
+      <div class="inp-group"><label>Current (A)</label><div class="inp-row"><input type="number" class="inp-num" id="fa-I" value="2.0" step="0.1" min="0.1"></div></div>
+      <div class="inp-group"><label>Time</label><div class="inp-row"><input type="number" class="inp-num" id="fa-t" value="60" step="1"><select class="inp-sel" id="fa-tunit"><option value="60">min</option><option value="1">sec</option><option value="3600">hr</option></select></div></div>
+      <button class="calc-go" onclick="calcFaraday('anode')">Calculate →</button>
+      <div class="result-steps" id="fa-result"></div>
+    </div>
+    <div class="far-calc">
+      <div class="card-title">Mass vs Charge Graph</div>
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">First Law: mass is directly proportional to charge Q = It.</p>
+      <div class="inp-group"><label>Ion for graph</label><select class="inp-sel-wide" id="fg-graphion" onchange="drawFarGraph()"></select></div>
+      <canvas id="farCanvas" style="width:100%;display:block;" height="160"></canvas>
+      <div id="far-graph-lbl" style="text-align:center;font-size:11px;color:var(--text-dim);margin-top:6px;font-family:'Share Tech Mono'"></div>
+    </div>
+  </div>
+</div>
+<!-- TAB 4: PREFERENTIAL DISCHARGE -->
+<div class="tab-pane" id="tab-pd">
+  <div class="glass" style="margin-bottom:14px;">
+    <div class="card-title">Preferential Discharge of Ions</div>
+    <p style="font-size:13px;color:var(--text-dim);line-height:1.8;">When several types of ions are present, the ion requiring the <strong style="color:var(--accent)">least energy</strong> to discharge is preferentially discharged. At the cathode, the ion with the <strong style="color:var(--cathode)">highest reduction potential (E°)</strong> is selected first. At an inert anode, the anion that is most easily <strong style="color:var(--anode)">oxidised</strong> is selected. Concentration critically affects this order.</p>
+  </div>
+  <div class="pd-layout">
+    <div>
+      <div class="glass" style="margin-bottom:14px;">
+        <div class="card-title">Cations — Reduction Potential (E°) at Cathode</div>
+        <div class="pd-table-wrap"><table><thead><tr><th>Metal Ion</th><th>Reduction Half-Equation</th><th style="text-align:right">E° (V)</th><th>Deposited?</th></tr></thead><tbody id="cation-tbody"></tbody></table></div>
+        <div style="margin-top:8px;font-size:11.5px;color:var(--text-dim);line-height:1.8;">
+          <span style="color:#00e88a">▲ More positive E°</span> = more easily reduced = preferentially discharged at cathode.<br>
+          Ions with E° below H⁺ (0.00 V) are usually <em>not</em> deposited in aqueous solution — H₂ gas forms instead.
+        </div>
+      </div>
+      <div class="glass">
+        <div class="card-title">Anions — Ease of Discharge at Inert Anode</div>
+        <div class="pd-table-wrap"><table><thead><tr><th>Anion</th><th>Oxidation Equation</th><th>Ease</th><th>Notes</th></tr></thead><tbody id="anion-tbody"></tbody></table></div>
+        <div class="conc-note" style="margin-top:10px;">
+          <h4>⚠️ Concentration Effect</h4>
+          Halide ions (Cl⁻, Br⁻, I⁻) are preferentially discharged in <strong>concentrated</strong> solutions. In <strong>dilute</strong> solutions, OH⁻ from water is preferentially oxidised, producing O₂. This explains why concentrated brine gives Cl₂ but dilute NaCl(aq) gives O₂.
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="glass">
+        <div class="card-title">Interactive Discharge Predictor</div>
+        <p style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">Select ions present in your electrolyte to predict which will be preferentially discharged at each electrode.</p>
+        <div style="font-size:11px;font-weight:600;color:var(--cathode);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;">Cations present</div>
+        <div id="cation-picker" style="margin-bottom:10px;"></div>
+        <div style="font-size:11px;font-weight:600;color:var(--anode);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;">Anions present</div>
+        <div id="anion-picker" style="margin-bottom:10px;"></div>
+        <div style="font-size:11px;font-weight:600;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;">Electrode Type</div>
+        <div style="display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;"><input type="radio" name="pdElec" value="inert" checked> Inert (C/Pt)</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;"><input type="radio" name="pdElec" value="active"> Active Metal:</label>
+          <select id="pdActiveMetal" class="ctrl-select" style="padding:4px 6px;font-size:12px;width:auto;"></select>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;">Concentration</div>
+        <div style="display:flex;gap:10px;margin-bottom:12px;">
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;"><input type="radio" name="pdConc" value="dilute" checked> Dilute</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;"><input type="radio" name="pdConc" value="conc"> Concentrated</label>
+        </div>
+        <button class="calc-go" onclick="predictDischarge()">Predict Discharge →</button>
+        <div class="discharge-result" id="discharge-result"><span style="color:var(--text-dim);font-style:italic;">Select ions and click Predict.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- TAB 5: APPLICATIONS -->
+<div class="tab-pane" id="tab-apps">
+  <div class="app-nav">
+    <button class="app-tab active" onclick="switchApp('plate',this)">🔩 Electroplating</button>
+    <button class="app-tab" onclick="switchApp('anodize',this)">🛡️ Anodizing</button>
+    <button class="app-tab" onclick="switchApp('purif',this)">🔶 Cu Purification</button>
+    <button class="app-tab" onclick="switchApp('chlor',this)">🧪 Chlor-Alkali</button>
+    <button class="app-tab" onclick="switchApp('al',this)">⚙️ Al Extraction</button>
+  </div>
+  <div class="app-pane active" id="app-plate">
+    <div>
+      <canvas id="appCanvas" height="320" style="width:100%;display:block;border-radius:8px;"></canvas>
+      <div class="app-ctrl-row" style="margin-top:8px;">
+        <select class="app-select" id="plate-metal"><option value="Au">Gold</option><option value="Ag">Silver</option><option value="Cu">Copper</option><option value="Ni">Nickel</option><option value="Cr">Chromium</option></select>
+        <button class="app-btn" onclick="startAppSim('plate')">▶ Simulate</button>
+        <button class="app-btn" onclick="stopAppSim()">■ Stop</button>
+      </div>
+    </div>
+    <div class="app-info">
+      <h3 style="color:var(--accent2);">Electroplating</h3>
+      <p>Deposits a thin layer of metal onto a substrate to improve appearance, corrosion resistance, or conductivity.</p>
+      <div class="app-detail"><h4>Setup</h4><ul><li><strong>Cathode (−):</strong> Object to be plated</li><li><strong>Anode (+):</strong> Pure plating metal (active — dissolves)</li><li><strong>Electrolyte:</strong> Solution of the plating metal's salt</li></ul></div>
+      <div class="app-detail"><h4>Equations (Copper example)</h4>
+        <div class="eq-line">Cathode: Cu²⁺(aq) + 2e⁻ → Cu(s)</div>
+        <div class="eq-line">Anode: Cu(s) → Cu²⁺(aq) + 2e⁻</div>
+        <div class="eq-line">Net: Cu transfers from anode to object</div>
+      </div>
+      <div class="app-detail"><h4>Industrial Uses</h4><ul><li>Gold/silver jewellery plating</li><li>Nickel/chrome on car parts</li><li>Zinc galvanizing of steel</li><li>Tin plating of food cans</li></ul></div>
+    </div>
+  </div>
+  <div class="app-pane" id="app-anodize">
+    <div>
+      <canvas id="anodizeCanvas" height="320" style="width:100%;display:block;border-radius:8px;"></canvas>
+      <div class="app-ctrl-row" style="margin-top:8px;"><button class="app-btn" onclick="startAppSim('anodize')">▶ Simulate</button><button class="app-btn" onclick="stopAppSim()">■ Stop</button></div>
+    </div>
+    <div class="app-info">
+      <h3 style="color:var(--accent);">Anodizing Aluminium</h3>
+      <p>Thickens the natural oxide layer on aluminium, greatly improving corrosion resistance and allowing the surface to be dyed.</p>
+      <div class="app-detail"><h4>Setup</h4><ul><li><strong>Anode (+):</strong> Aluminium article (article being anodized)</li><li><strong>Cathode (−):</strong> Inert lead or carbon</li><li><strong>Electrolyte:</strong> Dilute H₂SO₄(aq) ~15–20%</li></ul></div>
+      <div class="app-detail"><h4>Equations</h4>
+        <div class="eq-line">Anode: Al(s) → Al³⁺(aq) + 3e⁻</div>
+        <div class="eq-line">Al³⁺ + 3OH⁻ → Al₂O₃ (porous oxide layer on surface)</div>
+        <div class="eq-line">Cathode: 2H⁺(aq) + 2e⁻ → H₂(g)</div>
+      </div>
+      <div class="app-detail"><h4>Key Features</h4><ul><li>Oxide layer is porous — can absorb dyes for colour</li><li>Sealed by boiling water to close pores</li><li>Used in aircraft, construction, consumer electronics</li></ul></div>
+    </div>
+  </div>
+  <div class="app-pane" id="app-purif">
+    <div>
+      <canvas id="purifCanvas" height="320" style="width:100%;display:block;border-radius:8px;"></canvas>
+      <div class="app-ctrl-row" style="margin-top:8px;"><button class="app-btn" onclick="startAppSim('purif')">▶ Simulate</button><button class="app-btn" onclick="stopAppSim()">■ Stop</button></div>
+    </div>
+    <div class="app-info">
+      <h3 style="color:#b87333;">Copper Refining (Purification)</h3>
+      <p>Produces very pure copper (99.99%) essential for electrical wiring, by electrolytic refining of impure blister copper.</p>
+      <div class="purif-note"><strong>Key Distinction:</strong> <strong>Anode = IMPURE copper</strong> (dissolves). <strong>Cathode = PURE copper</strong> (grows). Precious metal impurities (Au, Ag, Pt) do NOT dissolve — they form the valuable <em>anode sludge</em>.</div>
+      <div class="app-detail" style="margin-top:8px;"><h4>Equations</h4>
+        <div class="eq-line">Anode: Cu(s) → Cu²⁺(aq) + 2e⁻ (impure Cu dissolves)</div>
+        <div class="eq-line">Cathode: Cu²⁺(aq) + 2e⁻ → Cu(s) (pure Cu deposits)</div>
+        <div class="eq-line">Ag, Au, Pt → do NOT dissolve → anode sludge (valuable!)</div>
+        <div class="eq-line">Zn, Fe, Ni → dissolve but stay in solution (not deposited)</div>
+      </div>
+    </div>
+  </div>
+  <div class="app-pane" id="app-chlor">
+    <div>
+      <canvas id="chlorCanvas" height="320" style="width:100%;display:block;border-radius:8px;"></canvas>
+      <div class="app-ctrl-row" style="margin-top:8px;"><button class="app-btn" onclick="startAppSim('chlor')">▶ Simulate</button><button class="app-btn" onclick="stopAppSim()">■ Stop</button></div>
+    </div>
+    <div class="app-info">
+      <h3 style="color:#44ffcc;">Chlor-Alkali Process</h3>
+      <p>Electrolysis of concentrated brine (NaCl aq) produces three commercially vital products: Cl₂, H₂, and NaOH.</p>
+      <div class="app-detail"><h4>Setup</h4><ul><li><strong>Anode (+):</strong> Inert titanium</li><li><strong>Cathode (−):</strong> Inert steel</li><li><strong>Electrolyte:</strong> Concentrated NaCl(aq) — brine</li></ul></div>
+      <div class="app-detail"><h4>Equations</h4>
+        <div class="eq-line" style="border-left-color:var(--anode);">Anode: 2Cl⁻(aq) → Cl₂(g) + 2e⁻ [conc. Cl⁻ preferred]</div>
+        <div class="eq-line" style="border-left-color:var(--cathode);">Cathode: 2H₂O(l) + 2e⁻ → H₂(g) + 2OH⁻(aq)</div>
+        <div class="eq-line">Overall: 2NaCl + 2H₂O → Cl₂ + H₂ + 2NaOH</div>
+      </div>
+      <div class="app-detail"><h4>Uses of Products</h4><ul><li><strong>Cl₂:</strong> PVC, bleach, pesticides</li><li><strong>H₂:</strong> Ammonia synthesis, fuel cells</li><li><strong>NaOH:</strong> Soap, paper, aluminium extraction</li></ul></div>
+    </div>
+  </div>
+  <div class="app-pane" id="app-al">
+    <div>
+      <canvas id="alCanvas" height="320" style="width:100%;display:block;border-radius:8px;"></canvas>
+      <div class="app-ctrl-row" style="margin-top:8px;"><button class="app-btn" onclick="startAppSim('al')">▶ Simulate</button><button class="app-btn" onclick="stopAppSim()">■ Stop</button></div>
+    </div>
+    <div class="app-info">
+      <h3 style="color:#c8d8ff;">Hall-Héroult: Aluminium Extraction</h3>
+      <p>Aluminium extracted by electrolysis of molten Al₂O₃ dissolved in molten cryolite at ~960°C. Cannot be reduced by carbon — too reactive.</p>
+      <div class="app-detail"><h4>Setup</h4><ul><li><strong>Cathode (−):</strong> Carbon lining — liquid Al collects here</li><li><strong>Anode (+):</strong> Carbon blocks — burn away in O₂, must be replaced</li><li><strong>Electrolyte:</strong> Molten Al₂O₃ in cryolite (lowers m.p. to ~960°C)</li></ul></div>
+      <div class="app-detail"><h4>Equations</h4>
+        <div class="eq-line" style="border-left-color:var(--cathode);">Cathode: Al³⁺(l) + 3e⁻ → Al(l)</div>
+        <div class="eq-line" style="border-left-color:var(--anode);">Anode: 2O²⁻(l) → O₂(g) + 4e⁻</div>
+        <div class="eq-line">C(s) + O₂(g) → CO₂(g) [anodes consumed!]</div>
+        <div class="eq-line">Overall: 2Al₂O₃ → 4Al + 3O₂</div>
+      </div>
+      <div class="app-detail"><h4>Energy Cost</h4><ul><li>~15 kWh per kg of aluminium produced</li><li>Recycling Al uses only 5% of extraction energy</li></ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 6: REFERENCE -->
+<div class="tab-pane" id="tab-ref">
+  <div class="ref-layout">
+    <div class="glass">
+      <div class="card-title">Electrochemical Series — Standard Reduction Potentials</div>
+      <p style="font-size:11.5px;color:var(--text-dim);margin-bottom:10px;">At 25°C, 1 mol dm⁻³ solutions, 1 atm.</p>
+      <div class="pd-table-wrap"><table><thead><tr><th>Ion</th><th>Reduction Half-Equation</th><th style="text-align:right">E° (V)</th></tr></thead><tbody id="ref-ec-tbody"></tbody></table></div>
+    </div>
+    <div>
+      <div class="glass" style="margin-bottom:14px;">
+        <div class="card-title">Anion Discharge Order (Inert Anode)</div>
+        <div class="pd-table-wrap"><table><thead><tr><th>Anion</th><th>Oxidation Equation</th><th>Ease</th></tr></thead><tbody id="ref-anion-tbody"></tbody></table></div>
+      </div>
+      <div class="glass" style="margin-bottom:14px;">
+        <div class="card-title">Common Electrolysis Products</div>
+        <div class="pd-table-wrap"><table><thead><tr><th>Electrolyte</th><th>Cathode</th><th>Anode</th></tr></thead><tbody id="ref-products-tbody"></tbody></table></div>
+      </div>
+      <div class="glass">
+        <div class="card-title">Key Formulae</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:13px;line-height:2.2;color:var(--text);">
+          <div><span style="color:var(--text-dim)">Charge:          </span>Q = I × t</div>
+          <div><span style="color:var(--text-dim)">Moles electrons: </span>n(e⁻) = Q / F</div>
+          <div><span style="color:var(--text-dim)">Moles product:   </span>n = n(e⁻) / z</div>
+          <div><span style="color:var(--text-dim)">Mass:            </span>m = n × M</div>
+          <div><span style="color:var(--text-dim)">Gas volume RTP:  </span>V = n × 24.0 dm³</div>
+          <div><span style="color:var(--text-dim)">Gas volume STP:  </span>V = n × 22.4 L</div>
+          <div style="margin-top:4px;color:var(--text-dim)">F = 96 485 C mol⁻¹</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 7: CONCEPTS -->
+<div class="tab-pane" id="tab-concepts">
+  <div class="glass" style="margin-bottom:14px;">
+    <div class="card-title">Essential Concepts in Electrolysis</div>
+    <p style="font-size:13px;color:var(--text-dim);line-height:1.8;"><strong style="color:var(--accent)">Electrolysis</strong> is the decomposition of a compound using electrical energy. An <strong style="color:var(--accent)">electrolyte</strong> (ionic compound in molten or aqueous form) conducts electricity via mobile ions. Electrons flow through external wires; ions migrate through the electrolyte to complete the circuit.</p>
+  </div>
+  <div class="concept-grid">
+    <div class="concept-card"><div class="concept-icon">⊕</div><h3 style="color:var(--anode)">Anode</h3><p>The <span class="hl2">positive</span> electrode, connected to the + terminal. <strong>Oxidation</strong> occurs here — anions lose electrons, or the electrode material itself is oxidised if active. Mnemonic: "<em>AN OX</em>" — ANion OXidation.</p></div>
+    <div class="concept-card"><div class="concept-icon">⊖</div><h3 style="color:var(--cathode)">Cathode</h3><p>The <span class="hl">negative</span> electrode, connected to the − terminal. <strong>Reduction</strong> occurs here — cations gain electrons and are deposited. Mnemonic: "<em>RED CAT</em>" — REDuction at CAThode.</p></div>
+    <div class="concept-card"><div class="concept-icon">💧</div><h3>Electrolyte</h3><p>Conducts electricity when <span class="hl">molten</span> or <span class="hl">dissolved in water</span> due to free mobile ions. Pure water and solid ionic compounds do NOT conduct. Examples: CuSO₄(aq), NaCl(l), H₂SO₄(aq).</p></div>
+    <div class="concept-card"><div class="concept-icon">🔋</div><h3>Electrode Types</h3><p><span class="hl">Inert electrodes</span> (graphite C, Pt) do not react with the electrolyte — only transfer electrons. <span class="hl2">Active electrodes</span> (Cu, Zn, Ni) participate — the anode dissolves into the electrolyte, replenishing metal ions.</p></div>
+    <div class="concept-card"><div class="concept-icon">⚡</div><h3>Faraday's Constant</h3><p><span class="hl">F = 96 485 C mol⁻¹</span> — the charge carried by one mole of electrons. Named after Michael Faraday (1791–1867). 1 F is the charge of 6.022 × 10²³ electrons. Central to all quantitative electrolysis calculations.</p></div>
+    <div class="concept-card"><div class="concept-icon">🔄</div><h3>Ion Migration</h3><p><strong>Cations</strong> (Cu²⁺, H⁺, Na⁺) migrate toward the <span class="hl">cathode</span> (negative). <strong>Anions</strong> (Cl⁻, SO₄²⁻, OH⁻) migrate toward the <span class="hl2">anode</span> (positive). Both types carry current through the solution.</p></div>
+    <div class="concept-card"><div class="concept-icon">🏆</div><h3>Preferential Discharge</h3><p>At cathode: highest E° discharged first. At anode (inert): discharge order is I⁻ > Br⁻ > Cl⁻ > OH⁻ >> SO₄²⁻. Cl⁻ vs OH⁻ depends on concentration: concentrated Cl⁻ gives Cl₂; dilute gives O₂.</p></div>
+    <div class="concept-card"><div class="concept-icon">🔬</div><h3>Aqueous vs Molten</h3><p>In <span class="hl">aqueous</span> solutions, water provides H⁺ and OH⁻ that compete for discharge. In <span class="hl2">molten</span> salts, only ions from the ionic compound are present — the metal and non-metal are obtained directly (e.g. Na and Cl₂ from molten NaCl).</p></div>
+    <div class="concept-card"><div class="concept-icon">📊</div><h3>Quantitative Electrolysis</h3><p>m = MIt/(zF): doubling current or time <span class="hl">doubles</span> mass deposited (First Law). For the same Q, the substance with higher M/z deposits more mass — Second Law. Example: Cu²⁺ (z=2, M=63.5) vs Ag⁺ (z=1, M=108).</p></div>
+  </div>
+</div>
+
+</main>
+<script>
+// ═══════════════════════════ DATA ═══════════════════════════
+const F_CONST = 96485;
+
+const ECSeries = [
+  {metal:'Li', ion:'Li⁺',  z:1, E0:-3.04, mm:6.941,  color:'#c8c8ff', halfEq:'Li⁺(aq) + e⁻ → Li(s)'},
+  {metal:'K',  ion:'K⁺',   z:1, E0:-2.92, mm:39.10,  color:'#d0d0ff', halfEq:'K⁺(aq) + e⁻ → K(s)'},
+  {metal:'Ca', ion:'Ca²⁺', z:2, E0:-2.87, mm:40.08,  color:'#e0e0d0', halfEq:'Ca²⁺(aq) + 2e⁻ → Ca(s)'},
+  {metal:'Na', ion:'Na⁺',  z:1, E0:-2.71, mm:22.99,  color:'#ddddff', halfEq:'Na⁺(aq) + e⁻ → Na(s)'},
+  {metal:'Mg', ion:'Mg²⁺', z:2, E0:-2.37, mm:24.31,  color:'#e8e8e8', halfEq:'Mg²⁺(aq) + 2e⁻ → Mg(s)'},
+  {metal:'Al', ion:'Al³⁺', z:3, E0:-1.66, mm:26.98,  color:'#c8d4e0', halfEq:'Al³⁺(aq) + 3e⁻ → Al(s)'},
+  {metal:'Zn', ion:'Zn²⁺', z:2, E0:-0.76, mm:65.38,  color:'#aabbc0', halfEq:'Zn²⁺(aq) + 2e⁻ → Zn(s)'},
+  {metal:'Fe', ion:'Fe²⁺', z:2, E0:-0.44, mm:55.85,  color:'#997755', halfEq:'Fe²⁺(aq) + 2e⁻ → Fe(s)'},
+  {metal:'Ni', ion:'Ni²⁺', z:2, E0:-0.23, mm:58.69,  color:'#909898', halfEq:'Ni²⁺(aq) + 2e⁻ → Ni(s)'},
+  {metal:'Sn', ion:'Sn²⁺', z:2, E0:-0.14, mm:118.71, color:'#b8b8c8', halfEq:'Sn²⁺(aq) + 2e⁻ → Sn(s)'},
+  {metal:'Pb', ion:'Pb²⁺', z:2, E0:-0.13, mm:207.2,  color:'#788080', halfEq:'Pb²⁺(aq) + 2e⁻ → Pb(s)'},
+  {metal:'H₂', ion:'H⁺',   z:1, E0:0.00,  mm:2.016,  color:'#ffffff', halfEq:'2H⁺(aq) + 2e⁻ → H₂(g)', isGasRef:true},
+  {metal:'Cu', ion:'Cu²⁺', z:2, E0:0.34,  mm:63.55,  color:'#c87840', halfEq:'Cu²⁺(aq) + 2e⁻ → Cu(s)'},
+  {metal:'Hg', ion:'Hg²⁺', z:2, E0:0.85,  mm:200.59, color:'#d0d0d8', halfEq:'Hg²⁺(aq) + 2e⁻ → Hg(l)'},
+  {metal:'Ag', ion:'Ag⁺',  z:1, E0:0.80,  mm:107.87, color:'#d0d0d0', halfEq:'Ag⁺(aq) + e⁻ → Ag(s)'},
+  {metal:'Pt', ion:'Pt²⁺', z:2, E0:1.20,  mm:195.08, color:'#c8d0d8', halfEq:'Pt²⁺(aq) + 2e⁻ → Pt(s)'},
+  {metal:'Au', ion:'Au³⁺', z:3, E0:1.50,  mm:196.97, color:'#ffd700', halfEq:'Au³⁺(aq) + 3e⁻ → Au(s)'},
+];
+
+const Anions = [
+  {ion:'I⁻',    color:'#bb88ff', ease:'Easiest',    easeClass:'easy', halfEq:'2I⁻(aq) → I₂(s) + 2e⁻', note:'Most easily oxidised; gives iodine'},
+  {ion:'Br⁻',   color:'#ff9966', ease:'Very Easy',  easeClass:'easy', halfEq:'2Br⁻(aq) → Br₂(l) + 2e⁻', note:'Gives bromine liquid'},
+  {ion:'Cl⁻',   color:'#44ffcc', ease:'Easy (conc)',easeClass:'med',  halfEq:'2Cl⁻(aq) → Cl₂(g) + 2e⁻', note:'Only in concentrated solution; dilute gives O₂'},
+  {ion:'OH⁻',   color:'#88ff44', ease:'Moderate',   easeClass:'med',  halfEq:'4OH⁻(aq) → 2H₂O(l) + O₂(g) + 4e⁻', note:'Preferred over SO₄²⁻; gives O₂'},
+  {ion:'SO₄²⁻', color:'#ff8800', ease:'Very Hard',  easeClass:'hard', halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻', note:'Not discharged; water oxidised instead'},
+  {ion:'NO₃⁻',  color:'#ffaa00', ease:'Very Hard',  easeClass:'hard', halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻', note:'Not discharged in aqueous solution'},
+  {ion:'CO₃²⁻', color:'#ffcc00', ease:'Hard',       easeClass:'hard', halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻', note:'Not discharged in aqueous solution'},
+];
+
+const ElecMats = [
+  {id:'C',  name:'Carbon (Graphite)', inert:true,  color:'#555555'},
+  {id:'Pt', name:'Platinum',          inert:true,  color:'#c0c8d0'},
+  {id:'Cu', name:'Copper',            inert:false, color:'#c87840'},
+  {id:'Ag', name:'Silver',            inert:false, color:'#d0d0d0'},
+  {id:'Ni', name:'Nickel',            inert:false, color:'#888888'},
+  {id:'Zn', name:'Zinc',              inert:false, color:'#a0b4c0'},
+  {id:'Fe', name:'Iron',              inert:false, color:'#886644'},
+  {id:'Au', name:'Gold',              inert:false, color:'#ffd700'},
+  {id:'Al', name:'Aluminium',         inert:false, color:'#c0c8d4'},
+];
+
+const Electrolytes = [
+  { id:'CuSO4_dil', name:'CuSO₄(aq) — Copper Sulfate (dilute)', liqColor:'rgba(40,120,255,0.35)',
+    cathode:(am)=>({type:'deposit',element:'Cu',z:2,M:63.55,color:'#c87840',halfEq:'Cu²⁺(aq) + 2e⁻ → Cu(s)',expl:'Cu²⁺ has E° = +0.34 V > E°(H⁺) = 0.00 V — preferentially reduced.',product:'copper metal deposit',isGas:false}),
+    anode:(am)=>ElecMats.find(e=>e.id===am).inert?{type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'SO₄²⁻ not discharged — water oxidised at inert anode, giving O₂.',product:'oxygen gas',isGas:true}:{type:'dissolve',z:2,M:63.55,halfEq:'Cu(s) → Cu²⁺(aq) + 2e⁻',expl:'Active Cu anode dissolves — replenishes Cu²⁺. Concentration stays constant.',product:'anode dissolves',isGas:false},
+    overall:(am)=>ElecMats.find(e=>e.id===am).inert?'2CuSO₄(aq) + 2H₂O(l) → 2Cu(s) + O₂(g) + 2H₂SO₄(aq)':'No net ionic change — Cu transfers from anode to cathode. CuSO₄ concentration unchanged.'
+  },
+  { id:'AgNO3', name:'AgNO₃(aq) — Silver Nitrate', liqColor:'rgba(220,225,255,0.15)',
+    cathode:(am)=>({type:'deposit',element:'Ag',z:1,M:107.87,color:'#d0d0d0',halfEq:'Ag⁺(aq) + e⁻ → Ag(s)',expl:'Ag⁺ has E° = +0.80 V — very easily reduced.',product:'silver metal deposit',isGas:false}),
+    anode:(am)=>ElecMats.find(e=>e.id===am).inert?{type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'NO₃⁻ cannot be further oxidised. Water is oxidised at inert anode.',product:'oxygen gas',isGas:true}:{type:'dissolve',z:1,M:107.87,halfEq:'Ag(s) → Ag⁺(aq) + e⁻',expl:'Active Ag anode dissolves.',product:'anode dissolves',isGas:false},
+    overall:(am)=>'4AgNO₃(aq) + 2H₂O(l) → 4Ag(s) + O₂(g) + 4HNO₃(aq)'
+  },
+  { id:'ZnSO4', name:'ZnSO₄(aq) — Zinc Sulfate', liqColor:'rgba(200,210,220,0.15)',
+    cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H⁺(aq) + 2e⁻ → H₂(g)',expl:'Zn²⁺ has E° = −0.76 V < 0.00 V. H⁺ preferentially reduced — H₂ gas evolves instead.',product:'hydrogen gas',isGas:true}),
+    anode:(am)=>ElecMats.find(e=>e.id===am).inert?{type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'SO₄²⁻ not discharged — water oxidised.',product:'oxygen gas',isGas:true}:{type:'dissolve',z:2,M:65.38,halfEq:'Zn(s) → Zn²⁺(aq) + 2e⁻',expl:'Active Zn anode dissolves.',product:'anode dissolves',isGas:false},
+    overall:(am)=>'ZnSO₄(aq) + H₂O(l) → H₂(g) + O₂(g) [ZnSO₄ unchanged — water decomposed]'
+  },
+  { id:'NiSO4', name:'NiSO₄(aq) — Nickel Sulfate', liqColor:'rgba(60,170,80,0.22)',
+    cathode:(am)=>({type:'deposit',element:'Ni',z:2,M:58.69,color:'#888888',halfEq:'Ni²⁺(aq) + 2e⁻ → Ni(s)',expl:'Ni²⁺ has E° = −0.23 V — borderline but Ni deposits in concentrated solution.',product:'nickel metal deposit',isGas:false}),
+    anode:(am)=>ElecMats.find(e=>e.id===am).inert?{type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'SO₄²⁻ not discharged; water oxidised.',product:'oxygen gas',isGas:true}:{type:'dissolve',z:2,M:58.69,halfEq:'Ni(s) → Ni²⁺(aq) + 2e⁻',expl:'Active Ni anode dissolves.',product:'anode dissolves',isGas:false},
+    overall:(am)=>'2NiSO₄(aq) + 2H₂O(l) → 2Ni(s) + O₂(g) + 2H₂SO₄(aq)'
+  },
+  { id:'H2SO4', name:'H₂SO₄(aq) — Dilute Sulfuric Acid', liqColor:'rgba(200,210,230,0.12)',
+    cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H⁺(aq) + 2e⁻ → H₂(g)',expl:'H⁺ is the only reducible species. H₂ always evolves at cathode.',product:'hydrogen gas',isGas:true}),
+    anode:(am)=>({type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'SO₄²⁻ not discharged — OH⁻ from water oxidised → O₂. H₂:O₂ ratio = 2:1 by volume.',product:'oxygen gas',isGas:true}),
+    overall:(am)=>'2H₂O(l) → 2H₂(g) + O₂(g) [Net: water decomposed]'
+  },
+  { id:'HCl_dil', name:'HCl(aq) — Dilute Hydrochloric Acid', liqColor:'rgba(190,210,240,0.12)',
+    cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H⁺(aq) + 2e⁻ → H₂(g)',expl:'H⁺ reduced at cathode → H₂.',product:'hydrogen gas',isGas:true}),
+    anode:(am)=>({type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'Dilute HCl: Cl⁻ too dilute — OH⁻ from water preferentially oxidised → O₂.',product:'oxygen gas',isGas:true}),
+    overall:(am)=>'2H₂O(l) → 2H₂(g) + O₂(g)'
+  },
+  { id:'HCl_conc', name:'HCl(aq) — Concentrated Hydrochloric Acid', liqColor:'rgba(160,220,200,0.18)',
+    cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H⁺(aq) + 2e⁻ → H₂(g)',expl:'H⁺ reduced → H₂.',product:'hydrogen gas',isGas:true}),
+    anode:(am)=>({type:'gas',gas:'Cl₂',gasCol:'rgba(140,255,150,0.72)',z:1,M:71,molesPerE:0.5,halfEq:'2Cl⁻(aq) → Cl₂(g) + 2e⁻',expl:'Concentrated Cl⁻ — Cl⁻ preferentially oxidised over OH⁻ → Cl₂ gas (yellow-green, pungent).',product:'chlorine gas',isGas:true}),
+    overall:(am)=>'2HCl(aq) → H₂(g) + Cl₂(g)'
+  },
+  { id:'NaCl_dil', name:'NaCl(aq) — Dilute Sodium Chloride', liqColor:'rgba(200,215,235,0.12)',
+    cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H₂O(l) + 2e⁻ → H₂(g) + 2OH⁻(aq)',expl:'Na⁺ has E° = −2.71 V — far too negative. H₂O reduced instead → H₂. Solution becomes alkaline (NaOH forms).',product:'hydrogen gas',isGas:true}),
+    anode:(am)=>({type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'Dilute NaCl — Cl⁻ too dilute; OH⁻ from water oxidised → O₂.',product:'oxygen gas',isGas:true}),
+    overall:(am)=>'2H₂O(l) → 2H₂(g) + O₂(g) [NaCl acts as carrier — not consumed]'
+  },
+  { id:'NaCl_conc', name:'NaCl(aq) — Concentrated Brine (Chlor-Alkali)', liqColor:'rgba(60,220,160,0.18)',
+    cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H₂O(l) + 2e⁻ → H₂(g) + 2OH⁻(aq)',expl:'Na⁺ not discharged. H₂O reduced → H₂. NaOH accumulates.',product:'hydrogen gas',isGas:true}),
+    anode:(am)=>({type:'gas',gas:'Cl₂',gasCol:'rgba(140,255,150,0.72)',z:1,M:71,molesPerE:0.5,halfEq:'2Cl⁻(aq) → Cl₂(g) + 2e⁻',expl:'Concentrated Cl⁻ → Cl₂ preferentially discharged. Industrial chlor-alkali process.',product:'chlorine gas',isGas:true}),
+    overall:(am)=>'2NaCl(aq) + 2H₂O(l) → Cl₂(g) + H₂(g) + 2NaOH(aq)'
+  },
+  { id:'NaCl_melt', name:'NaCl(l) — Molten Sodium Chloride', liqColor:'rgba(255,160,60,0.30)',
+    cathode:(am)=>({type:'deposit',element:'Na',z:1,M:22.99,color:'#ddddee',halfEq:'Na⁺(l) + e⁻ → Na(l)',expl:'No water — no competition. Na⁺ is the only cation; reduced directly to liquid sodium.',product:'liquid sodium metal',isGas:false}),
+    anode:(am)=>({type:'gas',gas:'Cl₂',gasCol:'rgba(140,255,150,0.72)',z:1,M:71,molesPerE:0.5,halfEq:'2Cl⁻(l) → Cl₂(g) + 2e⁻',expl:'No water — no O₂. Cl⁻ is the only anion → Cl₂ gas.',product:'chlorine gas',isGas:true}),
+    overall:(am)=>'2NaCl(l) → 2Na(l) + Cl₂(g)'
+  },
+  { id:'Al2O3_melt', name:'Al₂O₃(l) — Molten Alumina in Cryolite', liqColor:'rgba(200,180,120,0.32)',
+    cathode:(am)=>({type:'deposit',element:'Al',z:3,M:26.98,color:'#c8d4e4',halfEq:'Al³⁺(l) + 3e⁻ → Al(l)',expl:'Al³⁺ reduced directly to liquid aluminium metal. Hall-Héroult process.',product:'liquid aluminium',isGas:false}),
+    anode:(am)=>({type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:2,M:32,molesPerE:0.5,halfEq:'2O²⁻(l) → O₂(g) + 4e⁻',expl:'O²⁻ oxidised → O₂, which reacts with hot carbon anodes → CO₂. Anodes must be replaced.',product:'oxygen / CO₂ gas',isGas:true}),
+    overall:(am)=>'2Al₂O₃(l) → 4Al(l) + 3O₂(g)'
+  },
+];
+
+const ProductSummary = [
+  {elec:'CuSO₄(aq) — inert electrodes',cat:'Cu (metal deposit)',an:'O₂ (gas)'},
+  {elec:'CuSO₄(aq) — Cu electrodes',  cat:'Cu (metal deposit)',an:'Anode dissolves (Cu → Cu²⁺)'},
+  {elec:'AgNO₃(aq) — inert',          cat:'Ag (metal deposit)',an:'O₂ (gas)'},
+  {elec:'ZnSO₄(aq) — inert',          cat:'H₂ (gas)',          an:'O₂ (gas)'},
+  {elec:'H₂SO₄(aq) dilute',           cat:'H₂ (gas)',          an:'O₂ (gas) — ratio 2:1'},
+  {elec:'HCl(aq) dilute',             cat:'H₂ (gas)',          an:'O₂ (gas)'},
+  {elec:'HCl(aq) concentrated',       cat:'H₂ (gas)',          an:'Cl₂ (gas)'},
+  {elec:'NaCl(aq) dilute',            cat:'H₂ (gas)',          an:'O₂ (gas)'},
+  {elec:'NaCl(aq) concentrated',      cat:'H₂ (gas)',          an:'Cl₂ (gas)'},
+  {elec:'NaCl(l) molten',             cat:'Na (liquid metal)', an:'Cl₂ (gas)'},
+  {elec:'Al₂O₃(l) in cryolite',       cat:'Al (liquid metal)', an:'O₂/CO₂ (C anodes burn)'},
+];
+
+// ═══════════════════════════ SIMULATION STATE ═══════════════════════════
+const sim = {
+  running:false, setCurrent:2.0, current:0, time:0, charge:0,
+  elecId:'CuSO4_dil', anodeMat:'C', cathodeMat:'C',
+  anodeIn:true, cathodeIn:true,
+  cathodeDeposit:0, anodeLoss:0, anodeGas:0,
+  cathodeProd:null, anodeProd:null,
+  bubbles:[], catBubbles:[], ions:[], raf:null, lastTs:null
+};
+let appRaf=null, appFrame=0, currentAppId='plate';
+
+// ═══════════════════════════ INIT ═══════════════════════════
+function init(){
+  populateSelects();
+  buildRefTables();
+  buildPDTables();
+  buildPDPickers();
+  populateFaradaySelects();
+  updateAll();
+  drawFarGraph();
+  // Tab nav
+  document.querySelectorAll('.tnav').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.tnav').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
+      if(btn.dataset.tab==='far') setTimeout(drawFarGraph,50);
+      if(btn.dataset.tab==='sim') { setTimeout(()=>{drawCell();drawZooms();},50); }
+    });
+  });
+  restorePrefs();
+}
+
+function populateSelects(){
+  const es=document.getElementById('elecSelect');
+  Electrolytes.forEach(e=>{ const o=document.createElement('option'); o.value=e.id; o.textContent=e.name; es.appendChild(o); });
+  ['anodeMat','cathodeMat'].forEach(id=>{
+    const sel=document.getElementById(id);
+    ElecMats.forEach(m=>{ const o=document.createElement('option'); o.value=m.id; o.textContent=m.name; sel.appendChild(o); });
+  });
+  const pam=document.getElementById('pdActiveMetal');
+  ElecMats.filter(m=>!m.inert).forEach(m=>{ const o=document.createElement('option'); o.value=m.id; o.textContent=m.name; pam.appendChild(o); });
+}
+
+// ═══════════════════════════ POWER SUPPLY ═══════════════════════════
+function togglePower(){
+  sim.running=!sim.running;
+  const btn=document.getElementById('psuBtn'), led=document.getElementById('psuLed');
+  if(sim.running){
+    btn.classList.add('on'); btn.textContent='RUNNING'; led.classList.add('on');
+    sim.current=sim.setCurrent;
+    document.getElementById('psuCurrentDisp').textContent=sim.setCurrent.toFixed(2);
+    sim.lastTs=null;
+    if(sim.raf) cancelAnimationFrame(sim.raf);
+    simLoop();
+  } else {
+    btn.classList.remove('on'); btn.textContent='POWER'; led.classList.remove('on');
+    sim.current=0;
+    document.getElementById('psuCurrentDisp').textContent='0.00';
+    if(sim.raf) cancelAnimationFrame(sim.raf);
+  }
+}
+function adjCurrent(d){
+  sim.setCurrent=Math.min(10,Math.max(0.1,+(sim.setCurrent+d).toFixed(1)));
+  document.getElementById('psuSetDisp').textContent=sim.setCurrent.toFixed(1);
+  if(sim.running){ sim.current=sim.setCurrent; document.getElementById('psuCurrentDisp').textContent=sim.setCurrent.toFixed(2); }
+}
+
+// ═══════════════════════════ SIM LOOP ═══════════════════════════
+function simLoop(ts){
+  if(!sim.running) return;
+  if(!sim.lastTs) sim.lastTs=ts||performance.now();
+  const dt=Math.min(((ts||performance.now())-sim.lastTs)/1000,0.1);
+  sim.lastTs=ts||performance.now();
+  if(sim.anodeIn&&sim.cathodeIn){
+    sim.time+=dt; sim.charge+=sim.current*dt;
+    const elec=Electrolytes.find(e=>e.id===sim.elecId);
+    if(elec){
+      sim.cathodeProd=elec.cathode(sim.anodeMat);
+      sim.anodeProd=elec.anode(sim.anodeMat);
+      const nE=sim.charge/F_CONST;
+      if(sim.cathodeProd.isGas){ sim.cathodeDeposit=(nE/sim.cathodeProd.z)*24.0; }
+      else { sim.cathodeDeposit=(nE/sim.cathodeProd.z)*sim.cathodeProd.M; }
+      if(sim.anodeProd.type==='gas'){ sim.anodeGas=(nE*sim.anodeProd.molesPerE)*24.0; sim.anodeLoss=0; }
+      else if(sim.anodeProd.type==='dissolve'){ sim.anodeLoss=(nE/sim.anodeProd.z)*sim.anodeProd.M; sim.anodeGas=0; }
+    }
+    if(Math.random()<0.4) spawnBubble(sim.cathodeProd,'cathode');
+    if(Math.random()<0.4&&sim.anodeProd&&sim.anodeProd.isGas) spawnBubble(sim.anodeProd,'anode');
+    if(Math.random()<0.18) spawnIon();
+    updateParticles(dt);
+  }
+  const mm=Math.floor(sim.time/60).toString().padStart(2,'0');
+  const ss=Math.floor(sim.time%60).toString().padStart(2,'0');
+  document.getElementById('psuTimeDisp').textContent=mm+':'+ss;
+  document.getElementById('psuChargeDisp').textContent=sim.charge.toFixed(1);
+  const cp=sim.cathodeProd;
+  document.getElementById('statMass').textContent=cp&&!cp.isGas?sim.cathodeDeposit.toFixed(4)+'g':'—';
+  document.getElementById('statVol').textContent=cp&&cp.isGas?sim.cathodeDeposit.toFixed(4):'—';
+  document.getElementById('statAnodeLoss').textContent=sim.anodeLoss>0?sim.anodeLoss.toFixed(4)+'g':'—';
+  document.getElementById('statAnodeVol').textContent=sim.anodeGas>0?sim.anodeGas.toFixed(4):'—';
+  drawCell(); drawZooms();
+  sim.raf=requestAnimationFrame(simLoop);
+}
+
+// ═══════════════════════════ PARTICLES ═══════════════════════════
+function spawnBubble(prod,side){
+  const cvs=document.getElementById('cellCanvas');
+  const W=cvs.width,H=cvs.height,liqT=H*0.27;
+  const bx=side==='anode'?W*0.27+(Math.random()-.5)*16:W*0.73+(Math.random()-.5)*16;
+  let col='rgba(255,255,255,0.75)';
+  if(prod.gas==='O₂') col='rgba(180,210,255,0.7)';
+  else if(prod.gas==='Cl₂') col='rgba(140,255,150,0.75)';
+  const arr=side==='anode'?sim.bubbles:sim.catBubbles;
+  arr.push({x:bx,y:liqT+35,r:2+Math.random()*3,vy:-(16+Math.random()*20),vx:(Math.random()-.5)*3,opacity:1,col});
+  if(arr.length>60) arr.shift();
+}
+function spawnIon(){
+  const cvs=document.getElementById('cellCanvas'); if(!cvs) return;
+  const W=cvs.width,H=cvs.height,liqT=H*0.27,liqB=H*0.84;
+  const isCation=Math.random()>0.45;
+  const y=liqT+20+Math.random()*(liqB-liqT-40);
+  const col=isCation?'rgba(100,180,255,0.7)':'rgba(255,130,60,0.65)';
+  const lbl=isCation?'+':'−';
+  const x=isCation?W*0.45+Math.random()*W*0.1:W*0.55-Math.random()*W*0.1;
+  const vx=isCation?(1.2+Math.random()):(-(1.2+Math.random()));
+  sim.ions.push({x,y,r:4+Math.random()*2,vx,vy:(Math.random()-.5)*0.8,col,lbl,opacity:1});
+  if(sim.ions.length>40) sim.ions.shift();
+}
+function updateParticles(dt){
+  [sim.bubbles,sim.catBubbles].forEach(arr=>{
+    for(let i=arr.length-1;i>=0;i--){
+      const b=arr[i]; b.y+=b.vy*dt; b.x+=b.vx*dt; b.vy*=0.98; b.vx*=0.97; b.opacity-=dt*0.35;
+      if(b.opacity<=0||b.y<18) arr.splice(i,1);
+    }
+  });
+  for(let i=sim.ions.length-1;i>=0;i--){
+    const ion=sim.ions[i]; ion.x+=ion.vx*dt*22; ion.y+=ion.vy*dt*10; ion.opacity-=dt*0.14;
+    if(ion.opacity<=0) sim.ions.splice(i,1);
+  }
+}
+
+// ═══════════════════════════ CELL CANVAS ═══════════════════════════
+function drawCell(){
+  const cvs=document.getElementById('cellCanvas');
+  const W=cvs.parentElement.clientWidth-32; cvs.width=W; cvs.height=380; const H=cvs.height;
+  const ctx=cvs.getContext('2d');
+  const dark=!document.body.classList.contains('light');
+  ctx.fillStyle=dark?'#030710':'#e8eef8'; ctx.fillRect(0,0,W,H);
+  const aX=W*0.27, cX=W*0.73, liqT=H*0.27, elecTop=H*0.17, termY=H*0.08;
+  // Wires
+  if(sim.running&&sim.anodeIn&&sim.cathodeIn){
+    ctx.strokeStyle='#ff4400'; ctx.lineWidth=2.5; ctx.setLineDash([5,4]); ctx.lineDashOffset=-performance.now()*0.025;
+    ctx.beginPath(); ctx.moveTo(aX,termY); ctx.lineTo(aX,elecTop); ctx.stroke();
+    ctx.strokeStyle='#4488ff';
+    ctx.beginPath(); ctx.moveTo(cX,termY); ctx.lineTo(cX,elecTop); ctx.stroke();
+    ctx.setLineDash([]); ctx.lineDashOffset=0;
+  } else {
+    ctx.strokeStyle='rgba(80,80,80,0.45)'; ctx.lineWidth=2; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(aX,termY); ctx.lineTo(aX,elecTop); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cX,termY); ctx.lineTo(cX,elecTop); ctx.stroke();
+  }
+  // Terminals
+  drawTerminal(ctx,aX,termY,'+','#ff4444');
+  drawTerminal(ctx,cX,termY,'−','#4499ff');
+  // Beaker
+  drawBeaker(ctx,W,H,dark);
+  // Electrolyte liquid
+  const elec=Electrolytes.find(e=>e.id===sim.elecId);
+  if(elec){
+    const bx=W*0.14,bw=W*0.72;
+    ctx.fillStyle=elec.liqColor;
+    ctx.beginPath(); ctx.moveTo(bx+4,liqT); ctx.lineTo(bx+bw-4,liqT); ctx.lineTo(bx+bw-4,H*0.85); ctx.lineTo(bx+4,H*0.85); ctx.closePath(); ctx.fill();
+    const sg=ctx.createLinearGradient(0,liqT,0,liqT+10); sg.addColorStop(0,'rgba(255,255,255,0.15)'); sg.addColorStop(1,'transparent');
+    ctx.fillStyle=sg; ctx.fillRect(bx+4,liqT,bw-8,10);
+  }
+  // Ions
+  sim.ions.forEach(ion=>{
+    ctx.globalAlpha=ion.opacity; ctx.beginPath(); ctx.arc(ion.x,ion.y,ion.r,0,Math.PI*2);
+    ctx.fillStyle=ion.col; ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.font='7px Exo 2'; ctx.textAlign='center'; ctx.fillText(ion.lbl,ion.x,ion.y+2.5);
+    ctx.globalAlpha=1;
+  });
+  // Bubbles
+  [...sim.bubbles,...sim.catBubbles].forEach(b=>{
+    ctx.globalAlpha=Math.max(0,b.opacity); ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+    ctx.fillStyle=b.col; ctx.fill(); ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=0.5; ctx.stroke(); ctx.globalAlpha=1;
+  });
+  // Cathode deposit
+  if(sim.cathodeDeposit>0&&sim.cathodeProd&&!sim.cathodeProd.isGas){
+    const dH=Math.min(sim.cathodeDeposit*6,65),dW=14,dY=H*0.83;
+    const dg=ctx.createLinearGradient(cX-dW/2,dY-dH,cX+dW/2,dY);
+    const dc=sim.cathodeProd.color||'#888';
+    dg.addColorStop(0,dc+'bb'); dg.addColorStop(1,dc);
+    ctx.fillStyle=dg; ctx.beginPath(); ctx.roundRect(cX-dW/2,dY-dH,dW,dH,3); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.22)'; ctx.fillRect(cX-dW/2+2,dY-dH,3,dH);
+  }
+  // Electrodes
+  if(sim.anodeIn)  drawElectrode(ctx,aX,elecTop,H*0.83,'anode',sim.anodeMat,dark);
+  if(sim.cathodeIn) drawElectrode(ctx,cX,elecTop,H*0.83,'cathode',sim.cathodeMat,dark);
+  // Labels
+  ctx.font='bold 11px Rajdhani,sans-serif'; ctx.textAlign='center';
+  ctx.fillStyle='#ff5555'; ctx.fillText('ANODE (+)',aX,H*0.92);
+  ctx.fillStyle='#5599ff'; ctx.fillText('CATHODE (−)',cX,H*0.92);
+  if(elec){ ctx.fillStyle=dark?'rgba(140,180,220,0.5)':'rgba(20,50,100,0.4)'; ctx.font='10px Share Tech Mono,monospace'; ctx.fillText('ELECTROLYTE: '+sim.elecId.replace('_',' '),W/2,H*0.96); }
+  if(sim.running&&sim.anodeIn&&sim.cathodeIn){
+    ctx.font='bold 9px Share Tech Mono,monospace';
+    ctx.fillStyle='rgba(255,100,100,0.85)'; ctx.fillText('OXIDATION',aX,liqT-10);
+    ctx.fillStyle='rgba(100,160,255,0.85)'; ctx.fillText('REDUCTION',cX,liqT-10);
+  }
+}
+
+function drawTerminal(ctx,x,y,lbl,col){
+  ctx.beginPath(); ctx.arc(x,y,8,0,Math.PI*2); ctx.fillStyle=col+'99'; ctx.fill();
+  ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.font='bold 10px Arial'; ctx.textAlign='center'; ctx.fillText(lbl,x,y+3.5);
+}
+
+function drawBeaker(ctx,W,H,dark){
+  const bx=W*0.14,bw=W*0.72,bt=H*0.2,bb=H*0.88,thick=4;
+  const glass=dark?'rgba(140,180,220,0.2)':'rgba(80,120,180,0.15)';
+  const glStr=dark?'rgba(140,200,255,0.4)':'rgba(60,100,200,0.38)';
+  [[bx,bt,thick,bb-bt],[bx+bw-thick,bt,thick,bb-bt]].forEach(([x,y,w,h])=>{ ctx.fillStyle=glass; ctx.fillRect(x,y,w,h); });
+  ctx.fillStyle=glass; ctx.fillRect(bx,bb-thick,bw,thick);
+  ctx.strokeStyle=glStr; ctx.lineWidth=1.2;
+  [bx,bx+thick,bx+bw-thick,bx+bw].forEach(x=>{ ctx.beginPath(); ctx.moveTo(x,bt); ctx.lineTo(x,bb); ctx.stroke(); });
+  ctx.beginPath(); ctx.moveTo(bx,bb); ctx.lineTo(bx+bw,bb); ctx.stroke();
+  ctx.strokeStyle=dark?'rgba(100,160,220,0.15)':'rgba(60,100,180,0.12)'; ctx.lineWidth=0.8;
+  [0.35,0.55,0.75].forEach(f=>{ const y=bt+(bb-bt)*f; [[bx+thick,bx+thick+10],[bx+bw-thick,bx+bw-thick-10]].forEach(([x1,x2])=>{ ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo(x2,y); ctx.stroke(); }); });
+}
+
+function drawElectrode(ctx,x,topY,botY,type,matId,dark){
+  const mat=ElecMats.find(m=>m.id===matId)||ElecMats[0];
+  const W=18;
+  const g=ctx.createLinearGradient(x-W/2,0,x+W/2,0);
+  g.addColorStop(0,mat.color+'aa'); g.addColorStop(0.3,mat.color); g.addColorStop(0.7,mat.color); g.addColorStop(1,mat.color+'88');
+  ctx.fillStyle=g; ctx.fillRect(x-W/2,topY,W,botY-topY);
+  ctx.fillStyle='rgba(255,255,255,0.18)'; ctx.fillRect(x-W/2+2,topY,3,botY-topY);
+  ctx.strokeStyle=type==='anode'?'rgba(255,100,100,0.5)':'rgba(80,160,255,0.5)'; ctx.lineWidth=1.5; ctx.strokeRect(x-W/2,topY,W,botY-topY);
+  const cg=ctx.createRadialGradient(x,topY,0,x,topY,11);
+  cg.addColorStop(0,'#555'); cg.addColorStop(1,'#222');
+  ctx.beginPath(); ctx.arc(x,topY,8,0,Math.PI*2); ctx.fillStyle=cg; ctx.fill();
+  ctx.strokeStyle=type==='anode'?'#ff4444':'#4488ff'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='rgba(210,230,255,0.75)'; ctx.font='bold 9px Share Tech Mono,monospace'; ctx.textAlign='center'; ctx.fillText(matId,x,topY+22);
+}
+
+// ═══════════════════════════ ZOOM VIEWS ═══════════════════════════
+function drawZooms(){ drawAnodeZoom(); drawCathodeZoom(); }
+
+function drawAnodeZoom(){
+  const cvs=document.getElementById('anodeZoom');
+  cvs.width=cvs.parentElement.clientWidth-20; cvs.height=130;
+  const ctx=cvs.getContext('2d'); const W=cvs.width,H=cvs.height;
+  const dark=!document.body.classList.contains('light');
+  ctx.fillStyle=dark?'#020510':'#eef3fa'; ctx.fillRect(0,0,W,H);
+  const mat=ElecMats.find(m=>m.id===sim.anodeMat);
+  // electrode surface left
+  const eg=ctx.createLinearGradient(0,0,28,0); eg.addColorStop(0,mat.color); eg.addColorStop(1,mat.color+'aa');
+  ctx.fillStyle=eg; ctx.fillRect(0,0,28,H);
+  ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fillRect(2,0,4,H);
+  ctx.strokeStyle='rgba(255,100,100,0.5)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(28,0); ctx.lineTo(28,H); ctx.stroke();
+  ctx.fillStyle='rgba(255,100,100,0.9)'; ctx.font='bold 8px Share Tech Mono'; ctx.textAlign='center'; ctx.fillText('AN',14,12); ctx.fillText('+',14,H-6);
+  const prod=sim.anodeProd;
+  if(!prod||!sim.running||!sim.anodeIn){ ctx.fillStyle='rgba(120,150,180,0.45)'; ctx.font='11px Exo 2'; ctx.textAlign='center'; ctx.fillText('inactive',W/2+15,H/2+4); }
+  else if(prod.type==='gas'){
+    const t=performance.now()/1000;
+    for(let i=0;i<8;i++){
+      const bx=32+Math.abs(Math.sin(t*1.5+i*0.7))*18;
+      const by=H*0.12+i*(H*0.1)+Math.sin(t*2+i)*6; const br=2.5+Math.sin(t+i)*1.2;
+      ctx.beginPath(); ctx.arc(bx,by,br,0,Math.PI*2);
+      const gc=prod.gas==='Cl₂'?'rgba(100,255,130,0.72)':prod.gas==='O₂'?'rgba(180,210,255,0.72)':'rgba(255,255,255,0.78)';
+      ctx.fillStyle=gc; ctx.fill(); ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=0.5; ctx.stroke();
+    }
+    ctx.fillStyle=dark?'rgba(255,130,80,0.85)':'rgba(180,60,0,0.8)'; ctx.font='10px Exo 2'; ctx.textAlign='left'; ctx.fillText('← anions lose e⁻',36,H-14);
+    ctx.fillStyle=dark?'rgba(200,255,200,0.8)':'rgba(0,100,0,0.7)'; ctx.fillText(prod.gas+' gas →',36,H-2);
+    document.getElementById('anodeZoomLbl').textContent=prod.halfEq;
+  } else if(prod.type==='dissolve'){
+    const t=performance.now()/1000;
+    for(let i=0;i<6;i++){
+      const px=30+30*Math.abs(Math.sin(t*1.2+i*0.9));
+      const py=H*0.12+i*(H*0.13);
+      ctx.beginPath(); ctx.arc(px,py,5,0,Math.PI*2); ctx.fillStyle=mat.color+'cc'; ctx.fill();
+    }
+    ctx.fillStyle=dark?'rgba(255,180,60,0.85)':'rgba(160,80,0,0.8)'; ctx.font='10px Exo 2'; ctx.textAlign='left'; ctx.fillText('electrode dissolves →',36,H-6);
+    document.getElementById('anodeZoomLbl').textContent=prod.halfEq;
+  }
+}
+
+function drawCathodeZoom(){
+  const cvs=document.getElementById('cathodeZoom');
+  cvs.width=cvs.parentElement.clientWidth-20; cvs.height=130;
+  const ctx=cvs.getContext('2d'); const W=cvs.width,H=cvs.height;
+  const dark=!document.body.classList.contains('light');
+  ctx.fillStyle=dark?'#020510':'#eef3fa'; ctx.fillRect(0,0,W,H);
+  const mat=ElecMats.find(m=>m.id===sim.cathodeMat);
+  const eg=ctx.createLinearGradient(W-28,0,W,0); eg.addColorStop(0,mat.color+'aa'); eg.addColorStop(1,mat.color);
+  ctx.fillStyle=eg; ctx.fillRect(W-28,0,28,H);
+  ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fillRect(W-6,0,4,H);
+  ctx.strokeStyle='rgba(80,160,255,0.5)'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(W-28,0); ctx.lineTo(W-28,H); ctx.stroke();
+  ctx.fillStyle='rgba(80,180,255,0.9)'; ctx.font='bold 8px Share Tech Mono'; ctx.textAlign='center'; ctx.fillText('CAT',W-14,12); ctx.fillText('−',W-14,H-6);
+  const prod=sim.cathodeProd;
+  if(!prod||!sim.running||!sim.cathodeIn){ ctx.fillStyle='rgba(120,150,180,0.45)'; ctx.font='11px Exo 2'; ctx.textAlign='center'; ctx.fillText('inactive',W/2-15,H/2+4); }
+  else if(prod.isGas){
+    const t=performance.now()/1000;
+    for(let i=0;i<8;i++){
+      const bx=W-32-Math.abs(Math.sin(t*1.5+i*0.7))*18;
+      const by=H*0.12+i*(H*0.1)+Math.sin(t*2+i)*6; const br=2.5+Math.sin(t+i)*1.2;
+      ctx.beginPath(); ctx.arc(bx,by,br,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,0.78)'; ctx.fill(); ctx.strokeStyle='rgba(200,230,255,0.4)'; ctx.lineWidth=0.5; ctx.stroke();
+    }
+    ctx.fillStyle=dark?'rgba(80,180,255,0.85)':'rgba(0,80,200,0.8)'; ctx.font='10px Exo 2'; ctx.textAlign='right'; ctx.fillText('cations gain e⁻ →',W-34,H-14);
+    ctx.fillText('H₂ gas ←',W-34,H-2);
+    document.getElementById('cathodeZoomLbl').textContent=prod.halfEq;
+  } else {
+    const depH=Math.min((sim.cathodeDeposit||0)*28+6,H-18);
+    const dg=ctx.createLinearGradient(W-65,0,W-28,0);
+    dg.addColorStop(0,prod.color+'cc'); dg.addColorStop(0.6,prod.color); dg.addColorStop(1,prod.color+'88');
+    ctx.fillStyle=dg; ctx.fillRect(W-62,H-10-depH,28,depH);
+    ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.fillRect(W-62,H-10-depH,3,depH);
+    const t=performance.now()/1000;
+    for(let i=0;i<5;i++){
+      const ix=W-78-(i*22+Math.abs(Math.sin(t*1.8+i))*16);
+      const iy=H*0.18+i*(H*0.13);
+      if(ix>10){ ctx.beginPath(); ctx.arc(ix,iy,5,0,Math.PI*2); ctx.fillStyle='rgba(100,180,255,0.75)'; ctx.fill(); ctx.fillStyle='#fff'; ctx.font='7px Exo 2'; ctx.textAlign='center'; ctx.fillText('+',ix,iy+2.5); }
+    }
+    ctx.fillStyle=dark?'rgba(80,220,255,0.85)':'rgba(0,100,200,0.8)'; ctx.font='10px Exo 2'; ctx.textAlign='right'; ctx.fillText('← deposit growing',W-65,H-6);
+    document.getElementById('cathodeZoomLbl').textContent=prod.halfEq;
+  }
+}
+
+// ═══════════════════════════ CONTROLS ═══════════════════════════
+function toggleElectrode(side){
+  if(side==='anode'){ sim.anodeIn=!sim.anodeIn; document.getElementById('anodeInsertBtn').textContent=sim.anodeIn?'Remove Anode':'Insert Anode'; }
+  else { sim.cathodeIn=!sim.cathodeIn; document.getElementById('cathodeInsertBtn').textContent=sim.cathodeIn?'Remove Cathode':'Insert Cathode'; }
+  updateAll();
+}
+function updateAll(){
+  sim.elecId=document.getElementById('elecSelect').value;
+  sim.anodeMat=document.getElementById('anodeMat').value;
+  sim.cathodeMat=document.getElementById('cathodeMat').value;
+  const elec=Electrolytes.find(e=>e.id===sim.elecId);
+  if(elec){ sim.cathodeProd=elec.cathode(sim.anodeMat); sim.anodeProd=elec.anode(sim.anodeMat); }
+  updateEquations(); updateObservations(); drawCell(); drawZooms();
+}
+function resetSim(){
+  if(sim.running) togglePower();
+  sim.time=0; sim.charge=0; sim.cathodeDeposit=0; sim.anodeLoss=0; sim.anodeGas=0;
+  sim.bubbles=[]; sim.catBubbles=[]; sim.ions=[];
+  ['psuTimeDisp','psuChargeDisp'].forEach(id=>{ document.getElementById(id).textContent=id.includes('Time')?'00:00':'0.0'; });
+  ['statMass','statVol','statAnodeLoss','statAnodeVol'].forEach(id=>document.getElementById(id).textContent='—');
+  drawCell(); drawZooms();
+}
+
+// ═══════════════════════════ EQUATIONS ═══════════════════════════
+function updateEquations(){
+  const elec=Electrolytes.find(e=>e.id===sim.elecId); if(!elec) return;
+  const cp=elec.cathode(sim.anodeMat), ap=elec.anode(sim.anodeMat);
+  const am=ElecMats.find(e=>e.id===sim.anodeMat), cm=ElecMats.find(e=>e.id===sim.cathodeMat);
+  document.getElementById('eq-system-desc').innerHTML=`<strong style="color:var(--accent)">${elec.name}</strong> | Anode: <strong>${am.name}</strong> | Cathode: <strong>${cm.name}</strong>`;
+  document.getElementById('eq-cathode').textContent=cp.halfEq;
+  document.getElementById('eq-cathode-expl').innerHTML=`Product: <strong>${cp.product}</strong>`;
+  document.getElementById('eq-cathode-why').innerHTML=`<h4>Why this ion/product?</h4>${cp.expl}`;
+  document.getElementById('eq-anode').textContent=ap.halfEq;
+  document.getElementById('eq-anode-expl').innerHTML=`Product: <strong>${ap.product}</strong>`;
+  document.getElementById('eq-anode-why').innerHTML=`<h4>Why this ion/product?</h4>${ap.expl}`;
+  document.getElementById('eq-overall').textContent=elec.overall(sim.anodeMat);
+}
+
+// ═══════════════════════════ OBSERVATIONS ═══════════════════════════
+function updateObservations(){
+  const elec=Electrolytes.find(e=>e.id===sim.elecId); if(!elec){ return; }
+  const cp=elec.cathode(sim.anodeMat), ap=elec.anode(sim.anodeMat), obs=[];
+  if(cp.isGas) obs.push({col:'#aaddff',text:`Cathode: Colourless ${cp.gas} gas bubbles rise from electrode`});
+  else obs.push({col:'#aaddff',text:`Cathode: Metallic deposit of ${cp.element} builds up on electrode surface`});
+  if(ap.isGas) obs.push({col:'#ffaaaa',text:`Anode: ${ap.gas==='Cl₂'?'Yellow-green chlorine':'Colourless oxygen'} gas (${ap.gas}) evolves at electrode`});
+  else if(ap.type==='dissolve') obs.push({col:'#ffaaaa',text:`Anode: Electrode gradually dissolves; mass decreases during electrolysis`});
+  if(sim.elecId.includes('NaCl')) obs.push({col:'#88ffcc',text:'Solution near cathode becomes alkaline — NaOH forms (turns phenolphthalein pink)'});
+  if(sim.elecId==='CuSO4_dil'&&ElecMats.find(e=>e.id===sim.anodeMat).inert) obs.push({col:'#ccaaff',text:'Solution becomes acidic (H₂SO₄ forms); blue colour may fade as Cu²⁺ is consumed'});
+  if(sim.elecId.includes('melt')) obs.push({col:'#ffcc88',text:'Molten state essential — ionic compound must be liquid for free mobile ions to conduct'});
+  document.getElementById('obsBox').innerHTML=obs.map(o=>`<div class="obs-item"><div class="obs-dot" style="background:${o.col}"></div><span>${o.text}</span></div>`).join('');
+}
+
+// ═══════════════════════════ FARADAY CALCS ═══════════════════════════
+function populateFaradaySelects(){
+  const ions=[...ECSeries.filter(e=>!e.isGasRef),{metal:'H₂',ion:'H⁺',z:2,mm:2.016}];
+  ['fc-ion','fg-graphion'].forEach(id=>{
+    const sel=document.getElementById(id);
+    ions.forEach(ion=>{
+      const o=document.createElement('option');
+      o.value=`${ion.metal}|${ion.z}|${ion.mm}`;
+      o.textContent=`${ion.ion} → ${ion.metal} (z=${ion.z}, M=${ion.mm})`;
+      sel.appendChild(o);
+    });
+    sel.value='Cu|2|63.55';
+  });
+  const metals=ECSeries.filter(e=>!e.isGasRef);
+  const sel=document.getElementById('fa-metal');
+  metals.forEach(m=>{ const o=document.createElement('option'); o.value=`${m.metal}|${m.z}|${m.mm}`; o.textContent=`${m.metal} (z=${m.z}, M=${m.mm})`; sel.appendChild(o); });
+  sel.value='Cu|2|63.55';
+}
+
+function calcFaraday(type){
+  if(type==='deposit'){
+    const I=parseFloat(document.getElementById('fc-I').value);
+    const t=parseFloat(document.getElementById('fc-t').value)*parseFloat(document.getElementById('fc-tunit').value);
+    const [metal,z,M]=document.getElementById('fc-ion').value.split('|').map((v,i)=>i>0?parseFloat(v):v);
+    const Q=I*t, nE=Q/F_CONST, nMol=nE/z, mass=nMol*M;
+    const el=document.getElementById('fc-result');
+    el.style.display='block';
+    el.innerHTML=`<div class="step-line"><span class="step-label">Step 1: Q = I × t</span><span class="step-val">= ${I} × ${t} = ${Q.toFixed(1)} C</span></div>
+<div class="step-line"><span class="step-label">Step 2: n(e⁻) = Q / F</span><span class="step-val">= ${Q.toFixed(1)} / 96485 = ${nE.toFixed(5)} mol</span></div>
+<div class="step-line"><span class="step-label">Step 3: n(${metal}) = n(e⁻) / z</span><span class="step-val">= ${nE.toFixed(5)} / ${z} = ${nMol.toFixed(5)} mol</span></div>
+<div class="step-line"><span class="step-label">Step 4: m = n × M</span><span class="step-hl"> = ${nMol.toFixed(5)} × ${M} = <strong>${mass.toFixed(4)} g</strong></span></div>`;
+  } else if(type==='gas'){
+    const I=parseFloat(document.getElementById('fg-I').value);
+    const t=parseFloat(document.getElementById('fg-t').value)*parseFloat(document.getElementById('fg-tunit').value);
+    const gas=document.getElementById('fg-gas').value;
+    const cond=parseFloat(document.getElementById('fg-cond').value);
+    const gd={'H2':{z:2,M:2.016,nm:'H₂'},'O2':{z:4,M:32,nm:'O₂'},'Cl2':{z:2,M:71,nm:'Cl₂'}};
+    const g=gd[gas];
+    const Q=I*t, nE=Q/F_CONST, nMol=nE/g.z, vol=nMol*cond;
+    const el=document.getElementById('fg-result');
+    el.style.display='block';
+    el.innerHTML=`<div class="step-line"><span class="step-label">Step 1: Q = I × t</span><span class="step-val">= ${Q.toFixed(1)} C</span></div>
+<div class="step-line"><span class="step-label">Step 2: n(e⁻) = Q / F</span><span class="step-val">= ${nE.toFixed(5)} mol</span></div>
+<div class="step-line"><span class="step-label">Step 3: n(${g.nm}) = n(e⁻) / z</span><span class="step-val">= ${nMol.toFixed(5)} mol</span></div>
+<div class="step-line"><span class="step-label">Step 4: V = n × ${cond} dm³/mol</span><span class="step-hl"> = <strong>${vol.toFixed(4)} dm³ = ${(vol*1000).toFixed(2)} cm³</strong></span></div>`;
+  } else if(type==='anode'){
+    const [metal,z,M]=document.getElementById('fa-metal').value.split('|').map((v,i)=>i>0?parseFloat(v):v);
+    const m0=parseFloat(document.getElementById('fa-mass').value);
+    const I=parseFloat(document.getElementById('fa-I').value);
+    const t=parseFloat(document.getElementById('fa-t').value)*parseFloat(document.getElementById('fa-tunit').value);
+    const Q=I*t, nE=Q/F_CONST, nMol=nE/z, loss=nMol*M, mFinal=m0-loss;
+    const el=document.getElementById('fa-result');
+    el.style.display='block';
+    el.innerHTML=`<div class="step-line"><span class="step-label">Step 1: Q = I × t</span><span class="step-val">= ${Q.toFixed(1)} C</span></div>
+<div class="step-line"><span class="step-label">Step 2: n(e⁻) lost</span><span class="step-val">= ${nE.toFixed(5)} mol</span></div>
+<div class="step-line"><span class="step-label">Step 3: n(${metal}) dissolved</span><span class="step-val">= ${nMol.toFixed(5)} mol</span></div>
+<div class="step-line"><span class="step-label">Step 4: Mass lost = n × M</span><span class="step-val">= ${loss.toFixed(4)} g</span></div>
+<div class="step-line"><span class="step-label">Initial anode mass</span><span class="step-val">= ${m0.toFixed(3)} g</span></div>
+<div class="step-line"><span class="step-label">Final anode mass</span><span class="step-hl"> = <strong>${Math.max(0,mFinal).toFixed(3)} g</strong>${mFinal<0?' ⚠️ Anode fully consumed!':''}</span></div>`;
+  }
+}
+
+function drawFarGraph(){
+  const cvs=document.getElementById('farCanvas'); if(!cvs) return;
+  cvs.width=cvs.parentElement.clientWidth-32; cvs.height=160;
+  const ctx=cvs.getContext('2d'); const W=cvs.width,H=cvs.height;
+  const dark=!document.body.classList.contains('light');
+  ctx.fillStyle=dark?'#030710':'#eef3fa'; ctx.fillRect(0,0,W,H);
+  const val=document.getElementById('fg-graphion').value; if(!val) return;
+  const [metal,z,M]=val.split('|').map((v,i)=>i>0?parseFloat(v):v);
+  const pad={l:48,r:14,t:16,b:30};
+  const gW=W-pad.l-pad.r, gH=H-pad.t-pad.b;
+  const maxQ=5000, slope=M/(z*F_CONST);
+  ctx.strokeStyle=dark?'rgba(80,140,220,0.5)':'rgba(30,80,160,0.4)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,pad.t+gH); ctx.lineTo(pad.l+gW,pad.t+gH); ctx.stroke();
+  ctx.strokeStyle=dark?'rgba(60,100,160,0.18)':'rgba(0,60,140,0.08)'; ctx.lineWidth=0.8;
+  [1,2,3,4].forEach(i=>{
+    const y=pad.t+gH*(1-i/4);
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+gW,y); ctx.stroke();
+    ctx.fillStyle=dark?'rgba(120,170,220,0.7)':'rgba(20,60,120,0.6)'; ctx.font='9px Share Tech Mono'; ctx.textAlign='right';
+    ctx.fillText((slope*maxQ*i/4).toFixed(2),pad.l-3,y+3);
+  });
+  [0,1,2,3,4].forEach(i=>{ const x=pad.l+gW*i/4; ctx.fillStyle=dark?'rgba(120,170,220,0.7)':'rgba(20,60,120,0.6)'; ctx.font='9px Share Tech Mono'; ctx.textAlign='center'; ctx.fillText((maxQ*i/4).toFixed(0),x,pad.t+gH+16); });
+  ctx.save(); ctx.translate(13,pad.t+gH/2); ctx.rotate(-Math.PI/2); ctx.fillStyle=dark?'rgba(0,200,255,0.8)':'rgba(0,80,200,0.7)'; ctx.font='9px Exo 2'; ctx.textAlign='center'; ctx.fillText('Mass (g)',0,0); ctx.restore();
+  ctx.fillStyle=dark?'rgba(0,200,255,0.8)':'rgba(0,80,200,0.7)'; ctx.font='9px Exo 2'; ctx.textAlign='center'; ctx.fillText('Charge Q (C)',pad.l+gW/2,H-2);
+  const lineCol=ECSeries.find(e=>e.metal===metal)?.color||'#00c8ff';
+  ctx.beginPath();
+  for(let i=0;i<=60;i++){ const Q=i/60*maxQ; const px=pad.l+gW*i/60; const py=pad.t+gH*(1-slope*Q/(slope*maxQ)); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); }
+  ctx.strokeStyle=lineCol; ctx.lineWidth=2.5; ctx.shadowColor=lineCol; ctx.shadowBlur=6; ctx.stroke(); ctx.shadowBlur=0;
+  ctx.fillStyle=lineCol; ctx.font='9px Share Tech Mono'; ctx.textAlign='left'; ctx.fillText(`slope = M/(z×F) = ${slope.toExponential(3)} g/C`,pad.l+5,pad.t+14);
+  document.getElementById('far-graph-lbl').textContent=`${metal}: m = ${slope.toExponential(3)} × Q`;
+}
+
+// ═══════════════════════════ PD TABLES ═══════════════════════════
+function buildPDTables(){
+  const sorted=[...ECSeries].sort((a,b)=>b.E0-a.E0);
+  const tbody=document.getElementById('cation-tbody');
+  sorted.forEach(ion=>{
+    const tr=document.createElement('tr');
+    const cls=ion.E0>0?'easy':ion.E0===0?'med':'hard';
+    const dlbl=ion.E0>0?'Yes — deposits':ion.E0===0?'Reference (H₂)':'No — H₂ evolves instead';
+    tr.innerHTML=`<td><span class="td-mono" style="color:${ion.color}">${ion.ion}</span><div style="height:3px;border-radius:2px;margin-top:3px;width:${Math.min(100,Math.abs(ion.E0)/3.5*100)}%;max-width:80px;background:${ion.E0>=0?'#00e88a':'#ff5555'}"></div></td>
+<td class="td-mono" style="font-size:11.5px;">${ion.halfEq}</td>
+<td class="td-mono" style="text-align:right;color:${ion.E0>=0?'#00e88a':ion.E0===0?'#aaaaaa':'#ff7777'}">${ion.E0>=0?'+':''}${ion.E0.toFixed(2)}</td>
+<td><span class="badge-e ${cls}">${dlbl}</span></td>`;
+    tbody.appendChild(tr);
+  });
+  const anTbody=document.getElementById('anion-tbody');
+  Anions.forEach(an=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="td-mono" style="color:${an.color}">${an.ion}</span></td>
+<td class="td-mono" style="font-size:11px;">${an.halfEq}</td>
+<td><span class="badge-e ${an.easeClass}">${an.ease}</span></td>
+<td style="font-size:11.5px;color:var(--text-dim);">${an.note}</td>`;
+    anTbody.appendChild(tr);
+  });
+}
+
+function buildPDPickers(){
+  const cp=document.getElementById('cation-picker');
+  ECSeries.filter(e=>!e.isGasRef).forEach(ion=>{
+    const chip=document.createElement('span');
+    chip.className='ion-chip'; chip.dataset.ion=ion.ion; chip.dataset.e0=ion.E0;
+    chip.textContent=ion.ion; chip.style.color=ion.color; chip.style.borderColor=ion.color;
+    chip.onclick=()=>chip.classList.toggle('selected');
+    cp.appendChild(chip);
+  });
+  const ap=document.getElementById('anion-picker');
+  Anions.forEach(an=>{
+    const chip=document.createElement('span');
+    chip.className='ion-chip'; chip.dataset.ion=an.ion; chip.dataset.ease=an.ease; chip.dataset.easeClass=an.easeClass;
+    chip.textContent=an.ion; chip.style.color=an.color; chip.style.borderColor=an.color;
+    chip.onclick=()=>chip.classList.toggle('selected');
+    ap.appendChild(chip);
+  });
+}
+
+function predictDischarge(){
+  const selCations=[...document.querySelectorAll('#cation-picker .ion-chip.selected')].map(c=>({ion:c.dataset.ion,E0:parseFloat(c.dataset.e0)}));
+  const selAnions=[...document.querySelectorAll('#anion-picker .ion-chip.selected')].map(c=>({ion:c.dataset.ion,ease:c.dataset.ease,easeClass:c.dataset.easeClass}));
+  const elecType=document.querySelector('input[name="pdElec"]:checked').value;
+  const conc=document.querySelector('input[name="pdConc"]:checked').value;
+  const activeMetal=document.getElementById('pdActiveMetal').value;
+  if(selCations.length===0&&selAnions.length===0){ document.getElementById('discharge-result').innerHTML='<span style="color:var(--warn)">Please select at least one cation and one anion.</span>'; return; }
+  let html='';
+  if(selCations.length>0){
+    const sorted=[...selCations].sort((a,b)=>b.E0-a.E0);
+    const best=sorted[0];
+    const isH2=best.E0<0;
+    html+=`<div style="color:var(--cathode);font-weight:700;margin-bottom:4px;">⊖ CATHODE — Preferentially Discharged:</div>`;
+    if(isH2){
+      html+=`<div style="margin-bottom:8px;">All selected cations have E° &lt; 0.00 V, so <strong style="color:#00e88a;">H⁺ (from water)</strong> is preferentially reduced → <strong>H₂ gas</strong> evolves instead.<br><span style="font-family:'Share Tech Mono';font-size:12px;">2H⁺(aq) + 2e⁻ → H₂(g)</span></div>`;
+    } else {
+      html+=`<div style="margin-bottom:8px;"><strong style="color:#00e88a;">${best.ion}</strong> (E° = ${best.E0>=0?'+':''}${best.E0.toFixed(2)} V) — highest E° among selected cations → preferentially reduced.<br>`;
+      if(sorted.length>1) html+=`Others (${sorted.slice(1).map(s=>s.ion).join(', ')}) have lower E° — not preferentially discharged.`;
+      html+=`</div>`;
+    }
+  }
+  if(selAnions.length>0){
+    html+=`<div style="color:var(--anode);font-weight:700;margin-bottom:4px;margin-top:8px;">⊕ ANODE — Preferentially Discharged:</div>`;
+    if(elecType==='active'){
+      const mat=ElecMats.find(m=>m.id===activeMetal);
+      html+=`<div>Active <strong style="color:var(--accent2)">${mat.name}</strong> anode — the electrode material itself is oxidised instead of any anion.<br><span style="font-family:'Share Tech Mono';font-size:12px;">${activeMetal}(s) → ${activeMetal}ⁿ⁺(aq) + ne⁻</span></div>`;
+    } else {
+      const hasCl=selAnions.find(a=>a.ion==='Cl⁻');
+      const hasOH=selAnions.find(a=>a.ion==='OH⁻');
+      const easiest=[...selAnions].sort((a,b)=>{
+        const order=['I⁻','Br⁻','Cl⁻','OH⁻','SO₄²⁻','NO₃⁻','CO₃²⁻'];
+        return order.indexOf(a.ion)-order.indexOf(b.ion);
+      })[0];
+      let discharged=easiest;
+      if(hasCl&&hasOH){ discharged=conc==='conc'?hasCl:hasOH; html+=`<div style="margin-bottom:4px;color:var(--warn);">⚠️ Concentration effect: `; html+=conc==='conc'?`<strong>Concentrated</strong> — Cl⁻ preferentially discharged → <strong>Cl₂</strong> gas.`:`<strong>Dilute</strong> — OH⁻ preferentially discharged → <strong>O₂</strong> gas.`; html+=`</div>`; }
+      else {
+        html+=`<div><strong style="color:#00e88a;">${discharged.ion}</strong> — most easily oxidised among selected anions (<span class="badge-e ${discharged.easeClass}">${discharged.ease}</span>).<br>`;
+        if(selAnions.length>1) html+=`Others less easily oxidised and remain in solution.`;
+        html+=`</div>`;
+      }
+    }
+  }
+  document.getElementById('discharge-result').innerHTML=html;
+}
+
+// ═══════════════════════════ REF TABLES ═══════════════════════════
+function buildRefTables(){
+  const sorted=[...ECSeries].sort((a,b)=>b.E0-a.E0);
+  const tbody=document.getElementById('ref-ec-tbody');
+  sorted.forEach(ion=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="td-mono" style="color:${ion.color}">${ion.ion}</span></td>
+<td class="td-mono" style="font-size:11.5px;">${ion.halfEq}</td>
+<td class="td-mono" style="text-align:right;color:${ion.E0>=0?'#00e88a':ion.E0===0?'#aaaaaa':'#ff7777'}">${ion.E0>=0?'+':''}${ion.E0.toFixed(2)} V</td>`;
+    tbody.appendChild(tr);
+  });
+  const anTbody=document.getElementById('ref-anion-tbody');
+  Anions.forEach(an=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="td-mono" style="color:${an.color}">${an.ion}</span></td>
+<td class="td-mono" style="font-size:11px;">${an.halfEq}</td>
+<td><span class="badge-e ${an.easeClass}">${an.ease}</span></td>`;
+    anTbody.appendChild(tr);
+  });
+  const prTbody=document.getElementById('ref-products-tbody');
+  ProductSummary.forEach(row=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="font-size:12px;">${row.elec}</td><td style="color:var(--cathode);font-size:12px;">${row.cat}</td><td style="color:var(--anode);font-size:12px;">${row.an}</td>`;
+    prTbody.appendChild(tr);
+  });
+}
+
+// ═══════════════════════════ APPLICATIONS ANIMATIONS ═══════════════════════════
+function switchApp(id, btn){
+  currentAppId=id;
+  document.querySelectorAll('.app-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.app-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('app-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  stopAppSim();
+}
+
+function stopAppSim(){ if(appRaf){ cancelAnimationFrame(appRaf); appRaf=null; } }
+
+function startAppSim(id){
+  stopAppSim();
+  const canvases={plate:'appCanvas',anodize:'anodizeCanvas',purif:'purifCanvas',chlor:'chlorCanvas',al:'alCanvas'};
+  const cvs=document.getElementById(canvases[id]); if(!cvs) return;
+  appFrame=0;
+  function loop(){
+    appFrame++;
+    if(id==='plate') drawPlate(cvs);
+    else if(id==='anodize') drawAnodize(cvs);
+    else if(id==='purif') drawPurif(cvs);
+    else if(id==='chlor') drawChlorAlkali(cvs);
+    else if(id==='al') drawAlExtraction(cvs);
+    appRaf=requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function appBg(ctx,W,H,dark){
+  ctx.fillStyle=dark?'#030710':'#e8eef8'; ctx.fillRect(0,0,W,H);
+}
+function appBeaker(ctx,bx,by,bw,bH,dark){
+  const gl=dark?'rgba(140,200,255,0.22)':'rgba(60,120,200,0.18)';
+  const gs=dark?'rgba(140,200,255,0.4)':'rgba(60,100,200,0.38)';
+  const tk=4;
+  ctx.fillStyle=gl; ctx.fillRect(bx,by,tk,bH); ctx.fillRect(bx+bw-tk,by,tk,bH); ctx.fillRect(bx,by+bH-tk,bw,tk);
+  ctx.strokeStyle=gs; ctx.lineWidth=1.2;
+  [[bx,bx+tk],[bx+bw-tk,bx+bw]].forEach(([a,b])=>{ ctx.beginPath(); ctx.moveTo(a,by); ctx.lineTo(a,by+bH); ctx.stroke(); ctx.beginPath(); ctx.moveTo(b,by); ctx.lineTo(b,by+bH); ctx.stroke(); });
+  ctx.beginPath(); ctx.moveTo(bx,by+bH); ctx.lineTo(bx+bw,by+bH); ctx.stroke();
+}
+
+function drawPlate(cvs){
+  const W=cvs.parentElement.clientWidth; cvs.width=W; cvs.height=320;
+  const ctx=cvs.getContext('2d'); const H=cvs.height;
+  const dark=!document.body.classList.contains('light'); appBg(ctx,W,H,dark);
+  const t=appFrame/60;
+  const metals={'Au':{col:'#ffd700',name:'Gold'},'Ag':{col:'#d0d0d0',name:'Silver'},'Cu':{col:'#c87840',name:'Copper'},'Ni':{col:'#888888',name:'Nickel'},'Cr':{col:'#aabbcc',name:'Chromium'}};
+  const pm=document.getElementById('plate-metal')?.value||'Au';
+  const mc=metals[pm]||metals['Au'];
+  // beaker
+  const bx=W*0.15,by=H*0.12,bw=W*0.7,bH=H*0.72;
+  // liquid
+  ctx.fillStyle='rgba(60,120,200,0.28)'; ctx.fillRect(bx+4,by+bH*0.25,bw-8,bH*0.75-4);
+  appBeaker(ctx,bx,by,bw,bH,dark);
+  // Anode (active - plating metal)
+  const aX=W*0.28, cX=W*0.72, eTop=by+15, eBot=by+bH*0.85;
+  // Anode gradual thinning
+  const aW=16-Math.sin(t)*3;
+  const ag=ctx.createLinearGradient(aX-aW/2,0,aX+aW/2,0); ag.addColorStop(0,mc.col+'aa'); ag.addColorStop(0.5,mc.col); ag.addColorStop(1,mc.col+'88');
+  ctx.fillStyle=ag; ctx.fillRect(aX-aW/2,eTop,aW,eBot-eTop);
+  ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.fillRect(aX-aW/2+1,eTop,2,eBot-eTop);
+  // Cathode (object being plated - show as different shape)
+  const cg=ctx.createLinearGradient(cX-8,0,cX+8,0); cg.addColorStop(0,'#888'); cg.addColorStop(0.5,'#aaa'); cg.addColorStop(1,'#777');
+  // Draw object + plate layer
+  ctx.fillStyle=cg; ctx.beginPath(); ctx.roundRect(cX-10,eTop,20,eBot-eTop,4); ctx.fill();
+  const platH=Math.min(t*12,eBot-eTop); const pxOff=10+platH*0.3;
+  if(platH>1){
+    const pg=ctx.createLinearGradient(cX-pxOff,0,cX+pxOff,0); pg.addColorStop(0,mc.col+'88'); pg.addColorStop(0.5,mc.col+'cc'); pg.addColorStop(1,mc.col+'88');
+    ctx.fillStyle=pg; ctx.beginPath(); ctx.roundRect(cX-pxOff,eTop,pxOff*2,eBot-eTop,4); ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.fillRect(cX-pxOff+2,eTop,3,eBot-eTop);
+  }
+  // Metal ions migrating
+  for(let i=0;i<8;i++){
+    const phase=((t*0.8+i*0.3)%1);
+    const ix=aX+10+(cX-aX-30)*phase; const iy=by+bH*0.35+i*28;
+    if(iy>by+bH*0.28&&iy<by+bH*0.88){
+      ctx.beginPath(); ctx.arc(ix,iy,4,0,Math.PI*2); ctx.fillStyle=mc.col+'cc'; ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,0.8)'; ctx.font='7px Exo 2'; ctx.textAlign='center'; ctx.fillText(pm+'ⁿ⁺',ix,iy+2.5);
+    }
+  }
+  // Labels
+  ctx.fillStyle='rgba(255,100,100,0.9)'; ctx.font='bold 12px Rajdhani,sans-serif'; ctx.textAlign='center'; ctx.fillText(`ANODE (+) — ${mc.name}`,aX,by+bH+18);
+  ctx.fillStyle='rgba(80,160,255,0.9)'; ctx.fillText('CATHODE (−) — Object',cX,by+bH+18);
+  ctx.fillStyle=dark?'rgba(180,210,255,0.55)':'rgba(20,60,120,0.5)'; ctx.font='11px Share Tech Mono'; ctx.fillText('ELECTROLYTE: '+pm+' salt solution',W/2,by+bH*0.98);
+  ctx.fillStyle=dark?'rgba(200,220,255,0.7)':'rgba(10,40,100,0.65)'; ctx.font='bold 13px Rajdhani'; ctx.fillText('ELECTROPLATING — '+mc.name+' plating',W/2,by-8);
+}
+
+function drawPurif(cvs){
+  const W=cvs.parentElement.clientWidth; cvs.width=W; cvs.height=320;
+  const ctx=cvs.getContext('2d'); const H=cvs.height;
+  const dark=!document.body.classList.contains('light'); appBg(ctx,W,H,dark);
+  const t=appFrame/60;
+  const bx=W*0.12,by=H*0.12,bw=W*0.76,bH=H*0.72;
+  ctx.fillStyle='rgba(50,110,200,0.3)'; ctx.fillRect(bx+4,by+bH*0.22,bw-8,bH*0.78-4);
+  appBeaker(ctx,bx,by,bw,bH,dark);
+  const aX=W*0.27, cX=W*0.73, eTop=by+14, eBot=by+bH*0.82;
+  // Anode = impure copper (thicker, mottled)
+  const aW=22; const aLoss=Math.min(t*4,aW-4);
+  const ag=ctx.createLinearGradient(aX-(aW-aLoss)/2,0,aX+(aW-aLoss)/2,0);
+  ag.addColorStop(0,'#b06030'); ag.addColorStop(0.4,'#c87840'); ag.addColorStop(0.7,'#a85830'); ag.addColorStop(1,'#906020');
+  ctx.fillStyle=ag; ctx.fillRect(aX-(aW-aLoss)/2,eTop,aW-aLoss,eBot-eTop);
+  // Impurity spots
+  for(let i=0;i<6;i++){ ctx.beginPath(); ctx.arc(aX-5+i*2,eTop+30+i*28,3,0,Math.PI*2); ctx.fillStyle=['#d0d0d0','#ffd700','#c0c0c0'][i%3]; ctx.fill(); }
+  // Cathode = pure copper (growing)
+  const cGrow=Math.min(t*4,14);
+  const cg=ctx.createLinearGradient(cX-cGrow,0,cX+cGrow,0); cg.addColorStop(0,'#c87840cc'); cg.addColorStop(0.5,'#c87840'); cg.addColorStop(1,'#c87840cc');
+  ctx.fillStyle=cg; ctx.fillRect(cX-cGrow,eTop,cGrow*2,eBot-eTop);
+  ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.fillRect(cX-cGrow+2,eTop,3,eBot-eTop);
+  // Anode sludge
+  if(t>2){
+    const sH=Math.min((t-2)*4,18);
+    ctx.fillStyle='rgba(180,160,40,0.7)'; ctx.fillRect(aX-15,eBot,30,sH);
+    ctx.fillStyle=dark?'rgba(255,220,50,0.6)':'rgba(160,130,0,0.6)'; ctx.font='9px Share Tech Mono'; ctx.textAlign='center'; ctx.fillText('anode sludge',aX,eBot+sH+12);
+    ctx.fillText('(Au,Ag,Pt)',aX,eBot+sH+22);
+  }
+  // Cu²⁺ ions
+  for(let i=0;i<7;i++){
+    const ph=((t*0.7+i*0.25)%1);
+    const ix=aX+15+(cX-aX-35)*ph; const iy=by+bH*0.32+i*26;
+    if(iy<by+bH*0.85){ ctx.beginPath(); ctx.arc(ix,iy,4,0,Math.PI*2); ctx.fillStyle='rgba(120,80,50,0.85)'; ctx.fill(); ctx.fillStyle='rgba(255,220,180,0.9)'; ctx.font='7px Exo 2'; ctx.textAlign='center'; ctx.fillText('Cu²⁺',ix,iy+2.5); }
+  }
+  ctx.fillStyle='rgba(255,100,60,0.9)'; ctx.font='bold 12px Rajdhani'; ctx.textAlign='center'; ctx.fillText('ANODE (+) — IMPURE Cu',aX,by+bH+18);
+  ctx.fillStyle='rgba(80,160,255,0.9)'; ctx.fillText('CATHODE (−) — PURE Cu',cX,by+bH+18);
+  ctx.fillStyle=dark?'rgba(200,220,255,0.7)':'rgba(10,40,100,0.65)'; ctx.font='bold 13px Rajdhani'; ctx.fillText('COPPER PURIFICATION / REFINING',W/2,by-8);
+}
+
+function drawChlorAlkali(cvs){
+  const W=cvs.parentElement.clientWidth; cvs.width=W; cvs.height=320;
+  const ctx=cvs.getContext('2d'); const H=cvs.height;
+  const dark=!document.body.classList.contains('light'); appBg(ctx,W,H,dark);
+  const t=appFrame/60;
+  const bx=W*0.12,by=H*0.1,bw=W*0.76,bH=H*0.74;
+  ctx.fillStyle='rgba(60,180,150,0.25)'; ctx.fillRect(bx+4,by+bH*0.2,bw-8,bH*0.8-4);
+  appBeaker(ctx,bx,by,bw,bH,dark);
+  const aX=W*0.27, cX=W*0.73, eTop=by+14, eBot=by+bH*0.85;
+  // Inert electrodes
+  const drawInert=(x)=>{ const g=ctx.createLinearGradient(x-8,0,x+8,0); g.addColorStop(0,'#444'); g.addColorStop(0.5,'#666'); g.addColorStop(1,'#444'); ctx.fillStyle=g; ctx.fillRect(x-8,eTop,16,eBot-eTop); ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fillRect(x-8+1,eTop,3,eBot-eTop); };
+  drawInert(aX); drawInert(cX);
+  // Cl2 bubbles at anode
+  for(let i=0;i<6;i++){ const ph=((t*0.9+i*0.18)%1); const bby=eBot-(eBot-by)*ph; const bx2=aX+(Math.random()-.5)*12; ctx.beginPath(); ctx.arc(aX-8+Math.sin(t+i)*8,bby,3+Math.sin(t*2+i)*1,0,Math.PI*2); ctx.fillStyle='rgba(140,255,150,0.72)'; ctx.fill(); }
+  // H2 at cathode
+  for(let i=0;i<6;i++){ const ph=((t*0.9+i*0.22)%1); const bby=eBot-(eBot-by)*ph; ctx.beginPath(); ctx.arc(cX+Math.sin(t+i)*8,bby,2.5+Math.sin(t*1.5+i)*1,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.78)'; ctx.fill(); }
+  // Products
+  ctx.fillStyle='rgba(140,255,150,0.8)'; ctx.font='bold 11px Rajdhani'; ctx.textAlign='left'; ctx.fillText('Cl₂ gas',aX+10,by+20);
+  ctx.fillStyle='rgba(200,230,255,0.8)'; ctx.textAlign='right'; ctx.fillText('H₂ gas',cX-10,by+20);
+  ctx.fillStyle=dark?'rgba(80,255,180,0.7)':'rgba(0,100,60,0.7)'; ctx.font='11px Share Tech Mono'; ctx.textAlign='center'; ctx.fillText('NaOH forms in solution',W/2,by+bH*0.92);
+  ctx.fillStyle='rgba(255,100,100,0.9)'; ctx.font='bold 12px Rajdhani'; ctx.fillText('ANODE (+) — Ti (inert)',aX,by+bH+18);
+  ctx.fillStyle='rgba(80,160,255,0.9)'; ctx.fillText('CATHODE (−) — Steel (inert)',cX,by+bH+18);
+  ctx.fillStyle=dark?'rgba(200,220,255,0.7)':'rgba(10,40,100,0.65)'; ctx.font='bold 13px Rajdhani'; ctx.fillText('CHLOR-ALKALI PROCESS — Conc. NaCl(aq)',W/2,by-8);
+}
+
+function drawAnodize(cvs){
+  const W=cvs.parentElement.clientWidth; cvs.width=W; cvs.height=320;
+  const ctx=cvs.getContext('2d'); const H=cvs.height;
+  const dark=!document.body.classList.contains('light'); appBg(ctx,W,H,dark);
+  const t=appFrame/60;
+  const bx=W*0.12,by=H*0.1,bw=W*0.76,bH=H*0.74;
+  ctx.fillStyle='rgba(180,160,100,0.22)'; ctx.fillRect(bx+4,by+bH*0.22,bw-8,bH*0.78-4);
+  appBeaker(ctx,bx,by,bw,bH,dark);
+  const aX=W*0.35, cX=W*0.65, eTop=by+14, eBot=by+bH*0.85;
+  // Anode = Al article
+  const alG=ctx.createLinearGradient(aX-12,0,aX+12,0); alG.addColorStop(0,'#c0c8d4aa'); alG.addColorStop(0.5,'#c0c8d4'); alG.addColorStop(1,'#c0c8d4aa');
+  ctx.fillStyle=alG; ctx.fillRect(aX-12,eTop,24,eBot-eTop);
+  // Growing oxide layer
+  const oxH=Math.min(t*3,12); if(oxH>0){ ctx.fillStyle='rgba(180,160,120,0.65)'; ctx.fillRect(aX+12,eTop,oxH,eBot-eTop); ctx.fillRect(aX-12-oxH,eTop,oxH,eBot-eTop); }
+  // Cathode = inert
+  const cg=ctx.createLinearGradient(cX-8,0,cX+8,0); cg.addColorStop(0,'#444'); cg.addColorStop(0.5,'#666'); cg.addColorStop(1,'#444');
+  ctx.fillStyle=cg; ctx.fillRect(cX-8,eTop,16,eBot-eTop);
+  // H2 bubbles at cathode
+  for(let i=0;i<5;i++){ const ph=((t*0.8+i*0.22)%1); const by2=eBot-(eBot-by*1.25)*ph; ctx.beginPath(); ctx.arc(cX+Math.sin(t+i)*6,by2,2.5,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.78)'; ctx.fill(); }
+  ctx.fillStyle='rgba(200,180,120,0.8)'; ctx.font='11px Share Tech Mono'; ctx.textAlign='center'; ctx.fillText('Al₂O₃ layer grows on surface',W/2,by+bH*0.92);
+  ctx.fillStyle='rgba(255,100,100,0.9)'; ctx.font='bold 12px Rajdhani'; ctx.fillText('ANODE (+) — Al article',aX,by+bH+18);
+  ctx.fillStyle='rgba(80,160,255,0.9)'; ctx.fillText('CATHODE (−) — Carbon',cX,by+bH+18);
+  ctx.fillStyle=dark?'rgba(200,220,255,0.7)':'rgba(10,40,100,0.65)'; ctx.font='bold 13px Rajdhani'; ctx.fillText('ANODIZING ALUMINIUM — Dilute H₂SO₄',W/2,by-8);
+}
+
+function drawAlExtraction(cvs){
+  const W=cvs.parentElement.clientWidth; cvs.width=W; cvs.height=320;
+  const ctx=cvs.getContext('2d'); const H=cvs.height;
+  const dark=!document.body.classList.contains('light'); appBg(ctx,W,H,dark);
+  const t=appFrame/60;
+  // Electrolytic cell (wider, industrial)
+  const bx=W*0.1,by=H*0.08,bw=W*0.8,bH=H*0.74;
+  // Molten bath (orange-red glow for high temp)
+  const mg=ctx.createLinearGradient(0,by+bH*0.3,0,by+bH);
+  mg.addColorStop(0,'rgba(255,140,40,0.45)'); mg.addColorStop(1,'rgba(200,80,10,0.35)');
+  ctx.fillStyle=mg; ctx.fillRect(bx+4,by+bH*0.3,bw-8,bH*0.7-4);
+  appBeaker(ctx,bx,by,bw,bH,dark);
+  // Liquid Al pool at bottom
+  const alG2=ctx.createLinearGradient(0,by+bH*0.78,0,by+bH);
+  alG2.addColorStop(0,'#c0c8d4cc'); alG2.addColorStop(1,'#c0c8d4');
+  ctx.fillStyle=alG2; ctx.fillRect(bx+4,by+bH*0.78,bw-8,bH*0.22-4);
+  ctx.fillStyle=dark?'rgba(200,220,255,0.55)':'rgba(20,60,120,0.5)'; ctx.font='11px Share Tech Mono'; ctx.textAlign='center'; ctx.fillText('Liquid Aluminium',W/2,by+bH*0.92);
+  // Carbon anodes (hanging from top)
+  const aPositions=[W*0.28,W*0.5,W*0.72];
+  aPositions.forEach(ax=>{
+    const carbH=bH*0.48+Math.sin(t*0.3)*3;
+    const cg2=ctx.createLinearGradient(ax-10,0,ax+10,0); cg2.addColorStop(0,'#444'); cg2.addColorStop(0.5,'#666'); cg2.addColorStop(1,'#444');
+    ctx.fillStyle=cg2; ctx.fillRect(ax-10,by+8,20,carbH);
+    ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fillRect(ax-10+2,by+8,3,carbH);
+    // O2/CO2 bubbles
+    for(let i=0;i<4;i++){ const ph=((t*0.7+i*0.3)%1); const by3=by+bH*0.3+(bH*0.45)*ph; ctx.beginPath(); ctx.arc(ax+(Math.random()-.5)*10,by3,2.5,0,Math.PI*2); ctx.fillStyle='rgba(200,200,100,0.65)'; ctx.fill(); }
+    ctx.fillStyle='rgba(255,100,100,0.8)'; ctx.font='bold 10px Rajdhani'; ctx.textAlign='center'; ctx.fillText('+',ax,by+5);
+  });
+  ctx.fillStyle=dark?'rgba(200,220,255,0.7)':'rgba(10,40,100,0.65)'; ctx.font='bold 13px Rajdhani'; ctx.fillText('HALL-HÉROULT PROCESS — Molten Al₂O₃ in Cryolite (~960°C)',W/2,by-8);
+  ctx.fillStyle='rgba(200,180,100,0.7)'; ctx.font='11px Share Tech Mono'; ctx.textAlign='center'; ctx.fillText('CO₂ gas (C anodes burn)',W/2,by+30);
+  ctx.fillStyle='rgba(255,100,100,0.9)'; ctx.font='bold 12px Rajdhani'; ctx.fillText('ANODES (+) — Carbon (consumed)',W/2,by+bH+18);
+}
+
+// ═══════════════════════════ THEME & FONT ═══════════════════════════
+let isDark=true, fontSize=15;
+function toggleTheme(){
+  isDark=!isDark;
+  document.body.classList.toggle('light',!isDark);
+  document.getElementById('themeIcon').textContent=isDark?'☀️':'🌙';
+  document.getElementById('themeLabel').textContent=isDark?'Light':'Dark';
+  localStorage.setItem('elab-theme',isDark?'dark':'light');
+  setTimeout(()=>{ drawCell(); drawZooms(); drawFarGraph(); },50);
+}
+function adjFont(d){
+  fontSize=Math.min(24,Math.max(12,fontSize+d));
+  document.documentElement.style.setProperty('--base-font',fontSize+'px');
+  document.getElementById('fsDisp').textContent=fontSize+'px';
+  localStorage.setItem('elab-font',fontSize);
+}
+function restorePrefs(){
+  const th=localStorage.getItem('elab-theme');
+  if(th==='light'){ isDark=false; document.body.classList.add('light'); document.getElementById('themeIcon').textContent='🌙'; document.getElementById('themeLabel').textContent='Dark'; }
+  const fs=parseInt(localStorage.getItem('elab-font'));
+  if(fs&&fs>=12&&fs<=24){ fontSize=fs; document.documentElement.style.setProperty('--base-font',fontSize+'px'); document.getElementById('fsDisp').textContent=fontSize+'px'; }
+}
+
+// ═══════════════════════════ EXPORT / IMPORT ═══════════════════════════
+function exportState(){
+  const state={
+    version:1,
+    sim:{ elecId:sim.elecId, anodeMat:sim.anodeMat, cathodeMat:sim.cathodeMat, setCurrent:sim.setCurrent, time:sim.time, charge:sim.charge, cathodeDeposit:sim.cathodeDeposit, anodeLoss:sim.anodeLoss, anodeGas:sim.anodeGas },
+    prefs:{ theme:isDark?'dark':'light', fontSize },
+    faraday:{
+      fcI:document.getElementById('fc-I').value, fcT:document.getElementById('fc-t').value,
+      fcIon:document.getElementById('fc-ion').value,
+      fgI:document.getElementById('fg-I').value, fgT:document.getElementById('fg-t').value,
+      faI:document.getElementById('fa-I').value, faT:document.getElementById('fa-t').value,
+      faMass:document.getElementById('fa-mass').value, faMetal:document.getElementById('fa-metal').value
+    }
+  };
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='electrolysis_session_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+}
+function importState(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const state=JSON.parse(e.target.result);
+      if(state.sim){
+        document.getElementById('elecSelect').value=state.sim.elecId||sim.elecId;
+        document.getElementById('anodeMat').value=state.sim.anodeMat||sim.anodeMat;
+        document.getElementById('cathodeMat').value=state.sim.cathodeMat||sim.cathodeMat;
+        sim.setCurrent=state.sim.setCurrent||2;
+        document.getElementById('psuSetDisp').textContent=sim.setCurrent.toFixed(1);
+        sim.time=state.sim.time||0; sim.charge=state.sim.charge||0;
+        sim.cathodeDeposit=state.sim.cathodeDeposit||0; sim.anodeLoss=state.sim.anodeLoss||0;
+        const mm=Math.floor(sim.time/60).toString().padStart(2,'0');
+        const ss=Math.floor(sim.time%60).toString().padStart(2,'0');
+        document.getElementById('psuTimeDisp').textContent=mm+':'+ss;
+        document.getElementById('psuChargeDisp').textContent=sim.charge.toFixed(1);
+      }
+      if(state.prefs){
+        if(state.prefs.theme==='light'&&isDark){ toggleTheme(); }
+        else if(state.prefs.theme==='dark'&&!isDark){ toggleTheme(); }
+        if(state.prefs.fontSize){ fontSize=state.prefs.fontSize; document.documentElement.style.setProperty('--base-font',fontSize+'px'); document.getElementById('fsDisp').textContent=fontSize+'px'; }
+      }
+      if(state.faraday){
+        const f=state.faraday;
+        if(f.fcI) document.getElementById('fc-I').value=f.fcI;
+        if(f.fcT) document.getElementById('fc-t').value=f.fcT;
+        if(f.fcIon) document.getElementById('fc-ion').value=f.fcIon;
+        if(f.fgI) document.getElementById('fg-I').value=f.fgI;
+        if(f.fgT) document.getElementById('fg-t').value=f.fgT;
+        if(f.faI) document.getElementById('fa-I').value=f.faI;
+        if(f.faT) document.getElementById('fa-t').value=f.faT;
+        if(f.faMass) document.getElementById('fa-mass').value=f.faMass;
+        if(f.faMetal) document.getElementById('fa-metal').value=f.faMetal;
+      }
+      updateAll(); drawFarGraph();
+      alert('Session imported successfully!');
+    } catch(err){ alert('Import failed: '+err.message); }
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+// ═══════════════════════════ RESIZE ═══════════════════════════
+window.addEventListener('resize',()=>{ drawCell(); drawZooms(); drawFarGraph(); });
+window.addEventListener('load',()=>{ setTimeout(()=>{ populateFaradaySelects(); buildRefTables(); buildPDTables(); buildPDPickers(); updateAll(); drawFarGraph(); },150); });
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
