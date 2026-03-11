@@ -114,6 +114,12 @@ body.light .eq-formula{background:rgba(0,0,80,.05);color:#1a2040;}
 .eq-formula.cathode-eq{border-left-color:var(--cathode);}
 .eq-formula.overall-eq{border-left-color:var(--accent);}
 .eq-expl{font-size:12.5px;color:var(--text-dim);line-height:1.75;margin-top:8px;}
+.eq-dual-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0;}
+.eq-dual-formula{font-family:'Share Tech Mono',monospace;font-size:14px;color:#ddf0ff;flex:1;min-width:0;}
+body.light .eq-dual-formula{color:#1a2040;}
+.eq-level-badge{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:1px;padding:4px 10px;border-radius:4px;text-transform:uppercase;white-space:nowrap;flex-shrink:0;}
+.eq-level-badge.csec{background:rgba(0,232,138,.18);color:#00e88a;border:1px solid rgba(0,232,138,.4);}
+.eq-level-badge.adv{background:rgba(180,140,255,.14);color:#c8a8ff;border:1px solid rgba(180,140,255,.35);}
 .why-box{background:rgba(0,200,255,.04);border:1px solid rgba(0,200,255,.14);border-radius:7px;padding:12px;font-size:12px;line-height:1.75;margin-top:12px;}
 .why-box h4{font-family:'Rajdhani',sans-serif;font-size:12px;letter-spacing:1px;color:var(--accent);margin-bottom:6px;text-transform:uppercase;}
 /* ---- FARADAY ---- */
@@ -663,32 +669,38 @@ const Electrolytes = [
   { id:'CuSO4_dil', name:'CuSO₄(aq) — Copper Sulfate (dilute)', liqColor:'rgba(40,120,255,0.35)',
     cathode:(am)=>({type:'deposit',element:'Cu',z:2,M:63.55,color:'#c87840',halfEq:'Cu²⁺(aq) + 2e⁻ → Cu(s)',expl:'Cu²⁺ has E° = +0.34 V > E°(H⁺) = 0.00 V — preferentially reduced.',product:'copper metal deposit',isGas:false}),
     anode:(am)=>ElecMats.find(e=>e.id===am).inert?{type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'SO₄²⁻ not discharged — water oxidised at inert anode, giving O₂.',product:'oxygen gas',isGas:true}:{type:'dissolve',z:2,M:63.55,halfEq:'Cu(s) → Cu²⁺(aq) + 2e⁻',expl:'Active Cu anode dissolves — replenishes Cu²⁺. Concentration stays constant.',product:'anode dissolves',isGas:false},
-    overall:(am)=>ElecMats.find(e=>e.id===am).inert?'2CuSO₄(aq) + 2H₂O(l) → 2Cu(s) + O₂(g) + 2H₂SO₄(aq)':'No net ionic change — Cu transfers from anode to cathode. CuSO₄ concentration unchanged.'
+    overall:(am)=>ElecMats.find(e=>e.id===am).inert?'2CuSO₄(aq) + 2H₂O(l) → 2Cu(s) + O₂(g) + 2H₂SO₄(aq)':'No net ionic change — Cu transfers from anode to cathode. CuSO₄ concentration unchanged.',
+    overallCSEC:(am)=>ElecMats.find(e=>e.id===am).inert?'2Cu²⁺(aq) + 4OH⁻(aq) → 2Cu(s) + O₂(g) + 2H₂O(l)':null
   },
   { id:'AgNO3', name:'AgNO₃(aq) — Silver Nitrate', liqColor:'rgba(220,225,255,0.15)',
     cathode:(am)=>({type:'deposit',element:'Ag',z:1,M:107.87,color:'#d0d0d0',halfEq:'Ag⁺(aq) + e⁻ → Ag(s)',expl:'Ag⁺ has E° = +0.80 V — very easily reduced.',product:'silver metal deposit',isGas:false}),
     anode:(am)=>ElecMats.find(e=>e.id===am).inert?{type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'NO₃⁻ cannot be further oxidised. Water is oxidised at inert anode.',product:'oxygen gas',isGas:true}:{type:'dissolve',z:1,M:107.87,halfEq:'Ag(s) → Ag⁺(aq) + e⁻',expl:'Active Ag anode dissolves.',product:'anode dissolves',isGas:false},
-    overall:(am)=>'4AgNO₃(aq) + 2H₂O(l) → 4Ag(s) + O₂(g) + 4HNO₃(aq)'
+    overall:(am)=>'4AgNO₃(aq) + 2H₂O(l) → 4Ag(s) + O₂(g) + 4HNO₃(aq)',
+    overallCSEC:(am)=>ElecMats.find(e=>e.id===am).inert?'4Ag⁺(aq) + 4OH⁻(aq) → 4Ag(s) + O₂(g) + 2H₂O(l)':null
   },
   { id:'ZnSO4', name:'ZnSO₄(aq) — Zinc Sulfate', liqColor:'rgba(200,210,220,0.15)',
     cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H⁺(aq) + 2e⁻ → H₂(g)',expl:'Zn²⁺ has E° = −0.76 V < 0.00 V. H⁺ preferentially reduced — H₂ gas evolves instead.',product:'hydrogen gas',isGas:true}),
     anode:(am)=>ElecMats.find(e=>e.id===am).inert?{type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'SO₄²⁻ not discharged — water oxidised.',product:'oxygen gas',isGas:true}:{type:'dissolve',z:2,M:65.38,halfEq:'Zn(s) → Zn²⁺(aq) + 2e⁻',expl:'Active Zn anode dissolves.',product:'anode dissolves',isGas:false},
-    overall:(am)=>'ZnSO₄(aq) + H₂O(l) → H₂(g) + O₂(g) [ZnSO₄ unchanged — water decomposed]'
+    overall:(am)=>'ZnSO₄(aq) + H₂O(l) → H₂(g) + O₂(g) [ZnSO₄ unchanged — water decomposed]',
+    overallCSEC:(am)=>ElecMats.find(e=>e.id===am).inert?'4H⁺(aq) + 4OH⁻(aq) → 2H₂(g) + O₂(g) + 2H₂O(l)':null
   },
   { id:'NiSO4', name:'NiSO₄(aq) — Nickel Sulfate', liqColor:'rgba(60,170,80,0.22)',
     cathode:(am)=>({type:'deposit',element:'Ni',z:2,M:58.69,color:'#888888',halfEq:'Ni²⁺(aq) + 2e⁻ → Ni(s)',expl:'Ni²⁺ has E° = −0.23 V — borderline but Ni deposits in concentrated solution.',product:'nickel metal deposit',isGas:false}),
     anode:(am)=>ElecMats.find(e=>e.id===am).inert?{type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'SO₄²⁻ not discharged; water oxidised.',product:'oxygen gas',isGas:true}:{type:'dissolve',z:2,M:58.69,halfEq:'Ni(s) → Ni²⁺(aq) + 2e⁻',expl:'Active Ni anode dissolves.',product:'anode dissolves',isGas:false},
-    overall:(am)=>'2NiSO₄(aq) + 2H₂O(l) → 2Ni(s) + O₂(g) + 2H₂SO₄(aq)'
+    overall:(am)=>'2NiSO₄(aq) + 2H₂O(l) → 2Ni(s) + O₂(g) + 2H₂SO₄(aq)',
+    overallCSEC:(am)=>ElecMats.find(e=>e.id===am).inert?'2Ni²⁺(aq) + 4OH⁻(aq) → 2Ni(s) + O₂(g) + 2H₂O(l)':null
   },
   { id:'H2SO4', name:'H₂SO₄(aq) — Dilute Sulfuric Acid', liqColor:'rgba(200,210,230,0.12)',
     cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H⁺(aq) + 2e⁻ → H₂(g)',expl:'H⁺ is the only reducible species. H₂ always evolves at cathode.',product:'hydrogen gas',isGas:true}),
     anode:(am)=>({type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'SO₄²⁻ not discharged — OH⁻ from water oxidised → O₂. H₂:O₂ ratio = 2:1 by volume.',product:'oxygen gas',isGas:true}),
-    overall:(am)=>'2H₂O(l) → 2H₂(g) + O₂(g) [Net: water decomposed]'
+    overall:(am)=>'2H₂O(l) → 2H₂(g) + O₂(g) [Net: water decomposed]',
+    overallCSEC:(am)=>'4H⁺(aq) + 4OH⁻(aq) → 2H₂(g) + O₂(g) + 2H₂O(l)'
   },
   { id:'HCl_dil', name:'HCl(aq) — Dilute Hydrochloric Acid', liqColor:'rgba(190,210,240,0.12)',
     cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H⁺(aq) + 2e⁻ → H₂(g)',expl:'H⁺ reduced at cathode → H₂.',product:'hydrogen gas',isGas:true}),
     anode:(am)=>({type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'Dilute HCl: Cl⁻ too dilute — OH⁻ from water preferentially oxidised → O₂.',product:'oxygen gas',isGas:true}),
-    overall:(am)=>'2H₂O(l) → 2H₂(g) + O₂(g)'
+    overall:(am)=>'2H₂O(l) → 2H₂(g) + O₂(g)',
+    overallCSEC:(am)=>'4H⁺(aq) + 4OH⁻(aq) → 2H₂(g) + O₂(g) + 2H₂O(l)'
   },
   { id:'HCl_conc', name:'HCl(aq) — Concentrated Hydrochloric Acid', liqColor:'rgba(160,220,200,0.18)',
     cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H⁺(aq) + 2e⁻ → H₂(g)',expl:'H⁺ reduced → H₂.',product:'hydrogen gas',isGas:true}),
@@ -698,7 +710,8 @@ const Electrolytes = [
   { id:'NaCl_dil', name:'NaCl(aq) — Dilute Sodium Chloride', liqColor:'rgba(200,215,235,0.12)',
     cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H₂O(l) + 2e⁻ → H₂(g) + 2OH⁻(aq)',expl:'Na⁺ has E° = −2.71 V — far too negative. H₂O reduced instead → H₂. Solution becomes alkaline (NaOH forms).',product:'hydrogen gas',isGas:true}),
     anode:(am)=>({type:'gas',gas:'O₂',gasCol:'rgba(180,210,255,0.7)',z:4,M:32,molesPerE:0.25,halfEq:'2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻',expl:'Dilute NaCl — Cl⁻ too dilute; OH⁻ from water oxidised → O₂.',product:'oxygen gas',isGas:true}),
-    overall:(am)=>'2H₂O(l) → 2H₂(g) + O₂(g) [NaCl acts as carrier — not consumed]'
+    overall:(am)=>'2H₂O(l) → 2H₂(g) + O₂(g) [NaCl acts as carrier — not consumed]',
+    overallCSEC:(am)=>'2H₂O(l) → 2H₂(g) + O₂(g) [NaCl not consumed — OH⁻ cancels in both half-equations]'
   },
   { id:'NaCl_conc', name:'NaCl(aq) — Concentrated Brine (Chlor-Alkali)', liqColor:'rgba(60,220,160,0.18)',
     cathode:(am)=>({type:'gas',gas:'H₂',gasCol:'rgba(255,255,255,0.7)',z:2,M:2.016,molesPerE:0.5,halfEq:'2H₂O(l) + 2e⁻ → H₂(g) + 2OH⁻(aq)',expl:'Na⁺ not discharged. H₂O reduced → H₂. NaOH accumulates.',product:'hydrogen gas',isGas:true}),
@@ -1093,10 +1106,30 @@ function updateEquations(){
   document.getElementById('eq-cathode').textContent=cp.halfEq;
   document.getElementById('eq-cathode-expl').innerHTML=`Product: <strong>${cp.product}</strong>`;
   document.getElementById('eq-cathode-why').innerHTML=`<h4>Why this ion/product?</h4>${cp.expl}`;
-  document.getElementById('eq-anode').textContent=ap.halfEq;
+
+  const WATER_OX='2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻';
+  const anodeIsWater = ap.halfEq===WATER_OX;
+
+  // Anode half-equation — dual badges when water is oxidised
+  if(anodeIsWater){
+    document.getElementById('eq-anode').innerHTML=
+      `<div class="eq-dual-row"><span class="eq-level-badge csec">CSEC / CAPE</span><span class="eq-dual-formula">4OH⁻(aq) → O₂(g) + 2H₂O(l) + 4e⁻</span></div>`+
+      `<div class="eq-dual-row"><span class="eq-level-badge adv">Advanced / University</span><span class="eq-dual-formula">2H₂O(l) → O₂(g) + 4H⁺(aq) + 4e⁻</span></div>`;
+  } else {
+    document.getElementById('eq-anode').textContent=ap.halfEq;
+  }
   document.getElementById('eq-anode-expl').innerHTML=`Product: <strong>${ap.product}</strong>`;
   document.getElementById('eq-anode-why').innerHTML=`<h4>Why this ion/product?</h4>${ap.expl}`;
-  document.getElementById('eq-overall').textContent=elec.overall(sim.anodeMat);
+
+  // Overall equation — dual badges when overallCSEC exists and anode is water oxidation
+  const csecOverall = elec.overallCSEC ? elec.overallCSEC(sim.anodeMat) : null;
+  if(anodeIsWater && csecOverall){
+    document.getElementById('eq-overall').innerHTML=
+      `<div class="eq-dual-row"><span class="eq-level-badge csec">CSEC / CAPE</span><span class="eq-dual-formula">${csecOverall}</span></div>`+
+      `<div class="eq-dual-row"><span class="eq-level-badge adv">Advanced / University</span><span class="eq-dual-formula">${elec.overall(sim.anodeMat)}</span></div>`;
+  } else {
+    document.getElementById('eq-overall').textContent=elec.overall(sim.anodeMat);
+  }
 }
 
 // ═══════════════════════════ OBSERVATIONS ═══════════════════════════
